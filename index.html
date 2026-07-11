@@ -1,0 +1,1436 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Management System (Wholesale & Project)</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f9; overflow-x: hidden; }
+        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 700; }
+        .mode-active { background-color: #2563eb; color: white; border-color: #2563eb; }
+        .mode-inactive { background-color: white; color: #4b5563; border-color: #e5e7eb; }
+        th, td { white-space: nowrap; }
+        .sticky-col { position: sticky; right: 0; background-color: #f8fafc; border-left: 1px solid #e2e8f0; box-shadow: -2px 0 5px rgba(0,0,0,0.03); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .export-btn { @apply text-xs font-semibold px-3 py-1.5 rounded-lg border flex items-center transition shadow-sm bg-white hover:bg-gray-50; }
+        .clickable-cell { cursor: pointer; transition: all 0.2s; position: relative; }
+        .clickable-cell:hover { background-color: rgba(59, 130, 246, 0.1); color: #1d4ed8; text-decoration: underline; font-weight: bold; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- ============================================== -->
+    <!-- LOGIN SCREEN OVERLAY -->
+    <!-- ============================================== -->
+    <div id="loginScreen" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-[100] flex items-center justify-center transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-10 w-11/12 max-w-md transform transition-all">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <i class="fas fa-user-lock text-4xl text-blue-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">SCG Sales System</h2>
+                <p class="text-sm text-gray-500 mt-1">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+            </div>
+            
+            <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อผู้ใช้งาน (Username)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><i class="fas fa-user"></i></span>
+                        <input type="text" id="loginUser" required class="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl pl-11 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">รหัสผ่าน (Password)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="loginPass" required class="w-full bg-gray-50 border border-gray-200 text-gray-800 rounded-xl pl-11 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                    </div>
+                </div>
+                
+                <div id="loginError" class="hidden bg-red-50 text-red-600 text-sm font-medium p-3 rounded-xl border border-red-100 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i> <span id="loginErrorMsg">ข้อมูลไม่ถูกต้อง</span>
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex justify-center items-center">
+                    <span>เข้าสู่ระบบ</span>
+                </button>
+            </form>
+            <div class="mt-6 text-center text-xs text-gray-400">
+                &copy; 2026 SCG Sales Management System
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MAIN APP CONTAINER (Hidden until Logged In) -->
+    <!-- ============================================== -->
+    <div id="mainApp" class="hidden h-screen flex flex-col">
+        <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-md relative z-20">
+            <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 class="text-2xl font-bold tracking-wide flex items-center">
+                    <i class="fas fa-briefcase mr-2"></i> Sales Data System
+                </h1>
+                
+                <div class="flex bg-white rounded-full p-1 shadow-inner border border-blue-800/30">
+                    <button onclick="setMode('wholesale')" id="btnModeWholesale" class="mode-active px-6 py-1.5 rounded-full text-sm font-bold transition-all flex items-center shadow-sm">
+                        <i class="fas fa-store mr-2"></i> ระบบร้านค้า
+                    </button>
+                    <button onclick="setMode('project')" id="btnModeProject" class="mode-inactive px-6 py-1.5 rounded-full text-sm font-bold transition-all flex items-center hover:bg-gray-50">
+                        <i class="fas fa-building mr-2"></i> ระบบโครงการ
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-4 text-sm">
+                    <span id="syncStatus" class="bg-gray-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm"><i class="fas fa-hdd mr-1"></i> ออฟไลน์</span>
+                    <div class="flex space-x-2">
+                        <button onclick="document.getElementById('cloudModal').classList.remove('hidden')" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full shadow-sm text-xs font-semibold backdrop-blur-sm transition" title="ตั้งค่า Cloud">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button onclick="handleLogout()" class="bg-red-500/80 hover:bg-red-600 px-4 py-1.5 rounded-full shadow-sm text-xs font-semibold backdrop-blur-sm transition text-white flex items-center">
+                            <i class="fas fa-sign-out-alt mr-1"></i> ออกระบบ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="bg-white shadow-sm z-10 relative border-b border-gray-200">
+            <div class="container mx-auto px-6 flex justify-between items-center">
+                <div class="flex space-x-6">
+                    <button onclick="switchTab('formTab')" id="btn-formTab" class="py-4 px-2 tab-active hover:text-blue-600 focus:outline-none transition-colors"><i class="fas fa-edit mr-1"></i> บันทึกข้อมูล <span id="lblModeForm" class="text-xs ml-1 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">ร้านค้า</span></button>
+                    <button onclick="switchTab('dashboardTab')" id="btn-dashboardTab" class="py-4 px-2 text-gray-500 hover:text-blue-600 focus:outline-none transition-colors"><i class="fas fa-chart-pie mr-1"></i> รายงานสรุปผล</button>
+                </div>
+                <div class="text-sm font-semibold text-gray-600 hidden md:block">
+                    <i class="fas fa-user-circle text-blue-500 mr-1"></i> ยินดีต้อนรับ: <span id="displayUserName" class="text-blue-700">-</span>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-grow container mx-auto px-4 sm:px-6 py-8 overflow-auto relative">
+            
+            <!-- Tab 1: Form -->
+            <div id="formTab" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                    <h2 class="text-2xl font-bold text-gray-800" id="formTitle">ฟอร์มบันทึกข้อมูลร้านค้า</h2>
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="cancelEdit()" id="cancelBtn" class="hidden bg-gray-100 text-gray-600 px-5 py-2 rounded-xl font-medium hover:bg-gray-200 transition"><i class="fas fa-times mr-1"></i> ยกเลิก</button>
+                        <button type="button" onclick="saveData()" id="saveBtn" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-medium shadow-md shadow-blue-200 hover:bg-blue-700 hover:shadow-lg transition-all"><i class="fas fa-save mr-1"></i> บันทึกข้อมูล</button>
+                    </div>
+                </div>
+                <form id="formWholesale" class="space-y-10"></form>
+                <form id="formProject" class="space-y-10 hidden"></form>
+            </div>
+
+            <!-- Tab 2: Dashboard -->
+            <div id="dashboardTab" class="hidden space-y-6">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white rounded-2xl shadow-sm border border-gray-100 p-5 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800" id="dashTitle">แดชบอร์ดสรุปผล (ร้านค้า)</h2>
+                        <p class="text-sm text-gray-500 mt-1">วิเคราะห์สัดส่วนข้อมูล และรายงานการขาย</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <label for="importExcelBtn" class="bg-white border-2 border-gray-200 text-gray-700 px-4 py-2 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer text-sm flex items-center"><i class="fas fa-file-import text-gray-400 mr-2"></i> นำเข้า</label>
+                        <input type="file" id="importExcelBtn" class="hidden" accept=".xlsx, .xls, .csv" onchange="importFromExcel(event)">
+                        <button onclick="exportToExcel()" class="bg-white border-2 border-gray-200 text-gray-700 px-4 py-2 rounded-xl font-medium hover:bg-gray-50 transition text-sm flex items-center"><i class="fas fa-file-export text-green-500 mr-2"></i> ส่งออกข้อมูลทั้งหมด</button>
+                        <button onclick="clearData()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl font-medium hover:bg-red-100 transition text-sm flex items-center"><i class="fas fa-trash-alt mr-2"></i> ล้างข้อมูล</button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Filters -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-wrap gap-4 items-end relative overflow-hidden" id="dynamicFiltersContainer">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f1">ตัวกรอง 1</label><select id="f1" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f2">ตัวกรอง 2</label><select id="f2" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f3">ตัวกรอง 3</label><select id="f3" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f4">ตัวกรอง 4</label><select id="f4" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f5">ตัวกรอง 5</label><select id="f5" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f6">ตัวกรอง 6</label><select id="f6" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-gray-500 uppercase mb-2" id="lbl_f7">ตัวกรอง 7</label><select id="f7" onchange="updateCharts()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full md:w-auto flex-grow"><label class="block text-xs font-bold text-blue-600 uppercase mb-2" id="lbl_f8">ตัวกรอง 8</label><select id="f8" onchange="updateCharts()" class="w-full bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"></select></div>
+                    <div class="w-full xl:w-auto mt-2 xl:mt-0"><button onclick="resetFilters()" class="w-full bg-gray-100 text-gray-600 font-medium px-4 py-2 rounded-xl hover:bg-gray-200 transition text-sm flex items-center justify-center"><i class="fas fa-sync-alt mr-2"></i> รีเซ็ต</button></div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 flex items-center shadow-md shadow-blue-200 text-white relative overflow-hidden">
+                        <i class="fas fa-list absolute right-4 -bottom-4 text-8xl opacity-10"></i>
+                        <div class="p-4 rounded-2xl bg-white/20 backdrop-blur-sm mr-5"><i class="fas fa-folder-open fa-2x"></i></div>
+                        <div><p class="text-blue-100 font-medium text-sm mb-1 uppercase tracking-wide">จำนวนรายการทั้งหมด</p><p class="text-4xl font-bold" id="summaryTotalCount">0</p></div>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl p-6 flex items-center shadow-md shadow-emerald-200 text-white relative overflow-hidden">
+                        <i class="fas fa-chart-area absolute right-4 -bottom-4 text-8xl opacity-10"></i>
+                        <div class="p-4 rounded-2xl bg-white/20 backdrop-blur-sm mr-5"><i class="fas fa-layer-group fa-2x"></i></div>
+                        <div><p class="text-emerald-100 font-medium text-sm mb-1 uppercase tracking-wide" id="summaryAreaTitle">ปริมาณ Opp ทั้งหมด (ตร.ม.)</p><p class="text-4xl font-bold" id="summaryTotalArea">0</p></div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <!-- Trend Chart (3 เดือน) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:col-span-2 xl:col-span-4 w-full relative">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                            <div>
+                                <h3 class="font-bold text-gray-700 text-lg"><i class="fas fa-chart-line text-blue-500 mr-2"></i> เปรียบเทียบแนวโน้ม (3 เดือน)</h3>
+                                <p class="text-xs text-gray-500 mt-1">เปรียบเทียบปริมาณ Opp รวม (ตร.ม.)</p>
+                            </div>
+                            <div class="flex flex-wrap space-x-2 gap-y-2">
+                                <select id="trendM1" onchange="drawTrendChart()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 font-medium"></select>
+                                <select id="trendM2" onchange="drawTrendChart()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 font-medium"></select>
+                                <select id="trendM3" onchange="drawTrendChart()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 font-medium"></select>
+                            </div>
+                        </div>
+                        <div class="w-full h-[380px] relative flex justify-center"><canvas id="chartTrend"></canvas></div>
+                    </div>
+
+                    <!-- Charts 1-4 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center w-full relative"><h3 class="text-center font-bold text-gray-700 mb-6 text-lg" id="titleChart1">สถานะการขาย</h3><div class="w-full h-[380px] relative flex justify-center"><canvas id="chart1"></canvas></div></div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center w-full relative"><h3 class="text-center font-bold text-gray-700 mb-6 text-lg" id="titleChart2">-</h3><div class="w-full h-[380px] relative flex justify-center"><canvas id="chart2"></canvas></div></div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center w-full relative"><h3 class="text-center font-bold text-gray-700 mb-6 text-lg" id="titleChart3">-</h3><div class="w-full h-[380px] relative flex justify-center"><canvas id="chart3"></canvas></div></div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center w-full relative"><h3 class="text-center font-bold text-gray-700 mb-6 text-lg" id="titleChart4">-</h3><div class="w-full h-[380px] relative flex justify-center"><canvas id="chart4"></canvas></div></div>
+                    
+                    <!-- Custom Chart -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:col-span-2 xl:col-span-4 w-full relative flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="w-full md:w-1/3 flex flex-col items-center md:items-start text-center md:text-left bg-blue-50/50 p-6 rounded-xl border border-blue-100">
+                            <h3 class="font-bold text-gray-800 text-xl mb-2"><i class="fas fa-chart-pie text-blue-500 mr-2"></i> วิเคราะห์แบบกำหนดเอง</h3>
+                            <p class="text-sm text-gray-600 mb-5">เลือกหัวข้อที่คุณต้องการวิเคราะห์สัดส่วนข้อมูล</p>
+                            <select id="dynamicChartFilter" onchange="drawDynamicChart()" class="w-full bg-white border border-blue-300 text-blue-900 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all shadow-sm cursor-pointer"></select>
+                        </div>
+                        <div class="w-full md:w-2/3 h-[420px] relative flex justify-center"><canvas id="chartCustom"></canvas></div>
+                    </div>
+
+                    <!-- Opp Counter / Lintel -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:col-span-2 xl:col-span-2 w-full relative">
+                        <div class="text-center mb-4"><h3 class="font-bold text-gray-700 text-lg">Opp Counter (ตร.ม.) <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full ml-1">Top 10</span></h3><p class="text-xs text-blue-500 font-medium animate-pulse mt-1"><i class="fas fa-hand-pointer"></i> คลิกที่ส่วนของกราฟเพื่อดูรายละเอียด</p></div>
+                        <div class="w-full h-[420px] relative flex justify-center"><canvas id="chartCounter"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:col-span-2 xl:col-span-2 w-full relative">
+                        <div class="text-center mb-4"><h3 class="font-bold text-gray-700 text-lg">Opp Lintel (ตร.ม.) <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full ml-1">Top 10</span></h3><p class="text-xs text-blue-500 font-medium animate-pulse mt-1"><i class="fas fa-hand-pointer"></i> คลิกที่ส่วนของกราฟเพื่อดูรายละเอียด</p></div>
+                        <div class="w-full h-[420px] relative flex justify-center"><canvas id="chartLintel"></canvas></div>
+                    </div>
+
+                    <!-- Forecast Chart -->
+                    <div id="forecastContainer" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:col-span-2 xl:col-span-4 w-full hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-gray-700 text-lg">คาดการณ์ปริมาณความต้องการรายเดือน (Forecast)</h3>
+                            <span class="text-xs font-medium bg-blue-100 text-blue-700 px-3 py-1 rounded-full">ตร.ม.</span>
+                        </div>
+                        <div class="w-full relative h-[380px] overflow-x-auto"><div style="min-width: 1000px; height: 100%;"><canvas id="forecastChart"></canvas></div></div>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- สรุปรายงานพิเศษ (เฉพาะระบบโครงการ) -->
+                <!-- ============================================== -->
+                <div id="projectExtraReports" class="hidden space-y-6 mt-6">
+                    
+                    <!-- 1. กราฟ Backlog ในแต่ละเดือน (ดึงเฉพาะ Win) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full" id="export-sec-backlog">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-xl"><i class="fas fa-chart-line text-purple-600 mr-2"></i> ข้อมูล Back log ในแต่ละเดือน</h3>
+                                <p class="text-sm font-bold text-purple-600 mt-1 bg-purple-50 inline-block px-3 py-1 rounded-full border border-purple-200">ดึงเฉพาะสถานะ Win ที่มีการระบุ เดือน/ปี Last updated</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="exportToImage('export-sec-backlog', 'Backlog_Report')" class="export-btn text-purple-600 border-purple-200 hover:border-purple-400"><i class="fas fa-image mr-1"></i> Image</button>
+                                <button onclick="exportToPDF('export-sec-backlog', 'Backlog_Report')" class="export-btn text-red-600 border-red-200 hover:border-red-400"><i class="fas fa-file-pdf mr-1"></i> PDF</button>
+                            </div>
+                        </div>
+                        <div class="w-full h-[380px] relative flex justify-center"><canvas id="chartProjectBacklog"></canvas></div>
+                    </div>
+
+                    <!-- 1.5 ตารางข้อมูล Back log แยกแต่ละภาค -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full" id="export-sec-backlog-region">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-xl"><i class="fas fa-chart-bar text-purple-600 mr-2"></i> สรุปข้อมูล Back log แยกแต่ละภาค</h3>
+                                <p class="text-sm font-bold text-purple-600 mt-1 bg-purple-50 inline-block px-3 py-1 rounded-full border border-purple-200">ดึงเฉพาะสถานะ Win ที่มีการระบุ เดือน/ปี Last updated</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="exportTableToExcel('table-backlog-region', 'Backlog_By_Region')" class="export-btn text-green-600 border-green-200 hover:border-green-400"><i class="fas fa-file-excel mr-1"></i> Excel</button>
+                                <button onclick="exportToImage('export-sec-backlog-region', 'Backlog_By_Region')" class="export-btn text-purple-600 border-purple-200 hover:border-purple-400"><i class="fas fa-image mr-1"></i> Image</button>
+                                <button onclick="exportToPDF('export-sec-backlog-region', 'Backlog_By_Region')" class="export-btn text-red-600 border-red-200 hover:border-red-400"><i class="fas fa-file-pdf mr-1"></i> PDF</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-4 mb-4 bg-purple-50 p-4 rounded-xl border border-purple-100">
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="far fa-calendar-alt text-purple-500"></i> เลือกปี (Forecast Year):</label>
+                                <select id="selYearBacklogRegion" onchange="updateBacklogRegionSection()" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 outline-none">
+                                    <option value="ALL">-- ทุกปี --</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="fas fa-map-marker-alt text-purple-500"></i> เลือกภาค:</label>
+                                <select id="selRegionBacklogRegion" onchange="updateBacklogRegionSection()" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-purple-500 outline-none">
+                                    <option value="ALL">-- ทุกภาค --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="w-full overflow-x-auto mb-8 border border-gray-200 rounded-xl shadow-inner max-h-[500px]">
+                            <table id="table-backlog-region" class="w-full text-sm text-left text-gray-600 whitespace-nowrap"></table>
+                        </div>
+                        
+                        <div class="w-full h-[400px] relative flex justify-center"><canvas id="chartBacklogRegion"></canvas></div>
+                    </div>
+
+                    <!-- 2. ตารางและกราฟแนวโน้ม สถานะการขาย ภาพรวมรายเดือน -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full" id="export-sec-status-month">
+                        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-xl"><i class="fas fa-calendar-alt text-emerald-500 mr-2"></i> สรุปสถานะการขาย (Sales Status) ภาพรวมรายเดือน</h3>
+                                <p class="text-sm font-bold text-emerald-600 mt-1 bg-emerald-50 inline-block px-3 py-1 rounded-full border border-emerald-200">ดึงสถานะจาก เดือน/ปี Last updated เท่านั้น</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="exportTableToExcel('table-status-month', 'Sales_Status_By_Month')" class="export-btn text-green-600 border-green-200 hover:border-green-400"><i class="fas fa-file-excel mr-1"></i> Excel</button>
+                                <button onclick="exportToImage('export-sec-status-month', 'Sales_Status_By_Month')" class="export-btn text-purple-600 border-purple-200 hover:border-purple-400"><i class="fas fa-image mr-1"></i> Image</button>
+                                <button onclick="exportToPDF('export-sec-status-month', 'Sales_Status_By_Month')" class="export-btn text-red-600 border-red-200 hover:border-red-400"><i class="fas fa-file-pdf mr-1"></i> PDF</button>
+                            </div>
+                        </div>
+                        <div class="w-full overflow-x-auto mb-8 border border-gray-200 rounded-xl">
+                            <table id="table-status-month" class="w-full text-sm text-left text-gray-600 whitespace-nowrap"></table>
+                        </div>
+                        <div class="w-full h-[400px] relative flex justify-center"><canvas id="chartStatusMonth"></canvas></div>
+                    </div>
+
+                    <!-- 3. ตารางและกราฟสถานะการขาย แยก Project Region (เฉพาะ อิฐมอญ) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full" id="export-sec-region-brick">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-xl"><i class="fas fa-map-marked-alt text-orange-500 mr-2"></i> สรุปสถานะการขาย แยก Project Region</h3>
+                                <p class="text-sm font-bold text-orange-600 mt-1 bg-orange-50 inline-block px-3 py-1 rounded-full border border-orange-200">(เฉพาะ Product Spec เดิม: อิฐมอญ) ดึงสถานะจาก เดือน/ปี Last updated เท่านั้น</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="exportTableToExcel('table-region-brick', 'Sales_Status_Region_Brick')" class="export-btn text-green-600 border-green-200 hover:border-green-400"><i class="fas fa-file-excel mr-1"></i> Excel</button>
+                                <button onclick="exportToImage('export-sec-region-brick', 'Sales_Status_Region_Brick')" class="export-btn text-purple-600 border-purple-200 hover:border-purple-400"><i class="fas fa-image mr-1"></i> Image</button>
+                                <button onclick="exportToPDF('export-sec-region-brick', 'Sales_Status_Region_Brick')" class="export-btn text-red-600 border-red-200 hover:border-red-400"><i class="fas fa-file-pdf mr-1"></i> PDF</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-4 mb-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="far fa-calendar-alt text-orange-500"></i> เลือกปี (อิงปี Last Updated):</label>
+                                <select id="selYearBrick" onchange="updateExtraRegionSection('brick')" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none"><option value="ALL">-- ทุกปี --</option></select>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="fas fa-map-marker-alt text-orange-500"></i> เลือกภาค:</label>
+                                <select id="selRegionBrick" onchange="updateExtraRegionSection('brick')" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-orange-500 outline-none"><option value="ALL">-- ทุกภาค --</option></select>
+                            </div>
+                        </div>
+
+                        <div class="w-full overflow-x-auto mb-8 border border-gray-200 rounded-xl shadow-inner max-h-[500px]">
+                            <table id="table-region-brick" class="w-full text-sm text-left text-gray-600 whitespace-nowrap"></table>
+                        </div>
+                        
+                        <div class="w-full h-[400px] relative flex justify-center"><canvas id="chartRegionBrick"></canvas></div>
+                    </div>
+
+                    <!-- 4. ตารางและกราฟสถานะการขาย แยก Project Region (เฉพาะ ALC Other sizes) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full" id="export-sec-region-other">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-xl"><i class="fas fa-map-marked-alt text-teal-500 mr-2"></i> สรุปสถานะการขาย แยก Project Region</h3>
+                                <p class="text-sm font-bold text-teal-600 mt-1 bg-teal-50 inline-block px-3 py-1 rounded-full border border-teal-200">(เฉพาะ Product: ALC Other sizes) ดึงสถานะจาก เดือน/ปี Last updated เท่านั้น</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="exportTableToExcel('table-region-other', 'Sales_Status_Region_ALCOther')" class="export-btn text-green-600 border-green-200 hover:border-green-400"><i class="fas fa-file-excel mr-1"></i> Excel</button>
+                                <button onclick="exportToImage('export-sec-region-other', 'Sales_Status_Region_ALCOther')" class="export-btn text-purple-600 border-purple-200 hover:border-purple-400"><i class="fas fa-image mr-1"></i> Image</button>
+                                <button onclick="exportToPDF('export-sec-region-other', 'Sales_Status_Region_ALCOther')" class="export-btn text-red-600 border-red-200 hover:border-red-400"><i class="fas fa-file-pdf mr-1"></i> PDF</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-4 mb-4 bg-teal-50 p-4 rounded-xl border border-teal-100">
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="far fa-calendar-alt text-teal-500"></i> เลือกปี (อิงปี Last Updated):</label>
+                                <select id="selYearOther" onchange="updateExtraRegionSection('other')" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none"><option value="ALL">-- ทุกปี --</option></select>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="fas fa-map-marker-alt text-teal-500"></i> เลือกภาค:</label>
+                                <select id="selRegionOther" onchange="updateExtraRegionSection('other')" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-teal-500 outline-none"><option value="ALL">-- ทุกภาค --</option></select>
+                            </div>
+                        </div>
+
+                        <div class="w-full overflow-x-auto mb-8 border border-gray-200 rounded-xl shadow-inner max-h-[500px]">
+                            <table id="table-region-other" class="w-full text-sm text-left text-gray-600 whitespace-nowrap"></table>
+                        </div>
+                        
+                        <div class="w-full h-[400px] relative flex justify-center"><canvas id="chartRegionOther"></canvas></div>
+                    </div>
+
+                    <!-- 5. ตารางและกราฟสถานะการขาย แยก Project Region (เฉพาะ Precast) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full" id="export-sec-region-precast">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-xl"><i class="fas fa-layer-group text-indigo-500 mr-2"></i> สรุปสถานะการขาย แยก Project Region</h3>
+                                <p class="text-sm font-bold text-indigo-600 mt-1 bg-indigo-50 inline-block px-3 py-1 rounded-full border border-indigo-200">(เฉพาะ Product: Precast) ดึงสถานะจาก เดือน/ปี Last updated เท่านั้น</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="exportTableToExcel('table-region-precast', 'Sales_Status_Region_Precast')" class="export-btn text-green-600 border-green-200 hover:border-green-400"><i class="fas fa-file-excel mr-1"></i> Excel</button>
+                                <button onclick="exportToImage('export-sec-region-precast', 'Sales_Status_Region_Precast')" class="export-btn text-purple-600 border-purple-200 hover:border-purple-400"><i class="fas fa-image mr-1"></i> Image</button>
+                                <button onclick="exportToPDF('export-sec-region-precast', 'Sales_Status_Region_Precast')" class="export-btn text-red-600 border-red-200 hover:border-red-400"><i class="fas fa-file-pdf mr-1"></i> PDF</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-4 mb-4 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="far fa-calendar-alt text-indigo-500"></i> เลือกปี (อิงปี Last Updated):</label>
+                                <select id="selYearPrecast" onchange="updateExtraRegionSection('precast')" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"><option value="ALL">-- ทุกปี --</option></select>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-sm font-bold text-gray-700"><i class="fas fa-map-marker-alt text-indigo-500"></i> เลือกภาค:</label>
+                                <select id="selRegionPrecast" onchange="updateExtraRegionSection('precast')" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"><option value="ALL">-- ทุกภาค --</option></select>
+                            </div>
+                        </div>
+
+                        <div class="w-full overflow-x-auto mb-8 border border-gray-200 rounded-xl shadow-inner max-h-[500px]">
+                            <table id="table-region-precast" class="w-full text-sm text-left text-gray-600 whitespace-nowrap"></table>
+                        </div>
+                        
+                        <div class="w-full h-[400px] relative flex justify-center"><canvas id="chartRegionPrecast"></canvas></div>
+                    </div>
+
+                </div> <!-- End Project Extra Reports -->
+
+                <!-- Data Table -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full mt-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <h3 class="font-bold text-gray-700 text-lg">ตารางข้อมูลดิบ</h3>
+                        <div class="relative w-full md:w-96">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><i class="fas fa-search"></i></span>
+                            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="ค้นหาข้อมูล, ผู้รับเหมา, ชื่อร้าน..." class="w-full bg-gray-50 pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition">
+                        </div>
+                    </div>
+                    <div class="w-full overflow-x-auto border border-gray-100 rounded-xl bg-white max-h-[600px] shadow-inner">
+                        <table class="w-full text-sm text-left text-gray-600 whitespace-nowrap">
+                            <thead class="text-xs text-gray-500 uppercase bg-gray-50 sticky top-0 z-10 shadow-sm" id="tableHead"></thead>
+                            <tbody id="tableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal: Chart Details Pop-up -->
+            <div id="chartDetailsModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center hidden z-[70] transition-opacity">
+                <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-4/5 lg:w-3/4 max-h-[90vh] flex flex-col p-6 md:p-8 transform transition-all">
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
+                        <h3 class="text-xl font-bold text-gray-800" id="chartDetailsTitle"><i class="fas fa-list text-blue-500 mr-2"></i> รายละเอียด</h3>
+                        <button onclick="document.getElementById('chartDetailsModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition bg-gray-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="overflow-auto flex-grow border border-gray-200 rounded-xl shadow-inner bg-gray-50 max-h-[60vh]">
+                        <table class="w-full text-sm text-left text-gray-600 whitespace-nowrap">
+                            <thead class="text-xs text-gray-500 uppercase bg-gray-200 sticky top-0 z-10" id="chartDetailsHead"></thead>
+                            <tbody id="chartDetailsBody" class="divide-y divide-gray-200 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Cloud -->
+            <div id="cloudModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity">
+                <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-1/2 p-8 transform transition-all">
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-6">
+                        <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-cloud-upload-alt text-blue-500 mr-2"></i>ตั้งค่า Cloud Database</h3>
+                        <button onclick="document.getElementById('cloudModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition bg-gray-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="space-y-4 text-sm text-gray-600">
+                        <p class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-blue-800 leading-relaxed">
+                            เนื่องจากข้อมูลแบ่งเป็น 2 ระบบ กรุณาระบุ API URL (Google Apps Script) ที่รับข้อมูลสำหรับแต่ละระบบ
+                        </p>
+                        <div><label class="block font-bold text-gray-700 mb-1">API URL (Wholesale ร้านค้า):</label><input type="text" id="apiWholesale" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition"></div>
+                        <div><label class="block font-bold text-gray-700 mb-1">API URL (Project โครงการ):</label><input type="text" id="apiProject" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition"></div>
+                    </div>
+                    <div class="mt-8 flex justify-end space-x-3">
+                        <button onclick="document.getElementById('cloudModal').classList.add('hidden')" class="px-5 py-2.5 bg-gray-100 text-gray-600 font-medium rounded-xl hover:bg-gray-200 transition">ยกเลิก</button>
+                        <button onclick="saveCloudSettings()" class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-md transition">บันทึกตั้งค่า</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div> <!-- END MAIN APP -->
+
+    <script>
+        // ==========================================
+        // ระบบ LOGIN (Auth)
+        // ==========================================
+        const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbw6ryFGKGD7wA1Fuc8sSL38pHR6FPlNADkHpwZDgH6aOuS_afk8eWa6dmJnynVg-uFXyw/exec";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+        });
+
+        function checkLoginStatus() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            const userName = sessionStorage.getItem('userName');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                document.getElementById('displayUserName').innerText = userName || 'User';
+                loadLocalData(); // โหลดข้อมูลแอปเมื่อ Login ผ่านแล้ว
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+            }
+        }
+
+        async function handleLogin() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            const btn = document.getElementById('btnLoginSubmit');
+            const errorDiv = document.getElementById('loginError');
+            const errorMsg = document.getElementById('loginErrorMsg');
+
+            if(!user || !pass) return;
+
+            // แสดงสถานะโหลด
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> กำลังตรวจสอบ...';
+            btn.disabled = true;
+            errorDiv.classList.add('hidden');
+
+            try {
+                // แก้ปัญหาเบราว์เซอร์บล็อกโดยใช้ URLSearchParams (ส่งข้อมูลแบบ Form Data แทน JSON)
+                const formData = new URLSearchParams();
+                formData.append('username', user);
+                formData.append('password', pass);
+
+                const response = await fetch(AUTH_API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userName', result.user.name);
+                    sessionStorage.setItem('userRole', result.user.role);
+                    
+                    checkLoginStatus();
+                } else {
+                    errorDiv.classList.remove('hidden');
+                    errorMsg.innerText = result.message || "ชื่อผู้ใช้งาน หรือ รหัสผ่านไม่ถูกต้อง";
+                }
+            } catch (error) {
+                errorDiv.classList.remove('hidden');
+                errorMsg.innerText = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ (โปรดตรวจสอบการตั้งค่าสิทธิ์ Apps Script)";
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        function handleLogout() {
+            if(confirm("ต้องการออกจากระบบใช่หรือไม่?")) {
+                sessionStorage.removeItem('isLoggedIn');
+                sessionStorage.removeItem('userName');
+                sessionStorage.removeItem('userRole');
+                document.getElementById('loginForm').reset();
+                checkLoginStatus();
+            }
+        }
+
+
+        // ==========================================
+        // ระบบจัดการข้อมูลหลัก (Wholesale & Project)
+        // ==========================================
+        Chart.register(ChartDataLabels);
+
+        let currentMode = 'wholesale'; 
+        let editIndex = -1;
+        let chartInstances = {};
+        
+        let dbWholesale = [];
+        let dbProject = [];
+        let currentFilteredProjectData = [];
+
+        function sortChronological(arr) {
+            const mMap = {
+                "ม.ค.":1, "มกราคม":1, "jan":1, "january":1, "01":1, "1":1,
+                "ก.พ.":2, "กุมภาพันธ์":2, "feb":2, "february":2, "02":2, "2":2,
+                "มี.ค.":3, "มีนาคม":3, "mar":3, "march":3, "03":3, "3":3,
+                "เม.ย.":4, "เมษายน":4, "apr":4, "april":4, "04":4, "4":4,
+                "พ.ค.":5, "พฤษภาคม":5, "may":5, "05":5, "5":5,
+                "มิ.ย.":6, "มิถุนายน":6, "jun":6, "june":6, "06":6, "6":6,
+                "ก.ค.":7, "กรกฎาคม":7, "jul":7, "july":7, "07":7, "7":7,
+                "ส.ค.":8, "สิงหาคม":8, "aug":8, "august":8, "08":8, "8":8,
+                "ก.ย.":9, "กันยายน":9, "sep":9, "september":9, "09":9, "9":9,
+                "ต.ค.":10, "ตุลาคม":10, "oct":10, "october":10, "10":10,
+                "พ.ย.":11, "พฤศจิกายน":11, "nov":11, "november":11, "11":11,
+                "ธ.ค.":12, "ธันวาคม":12, "dec":12, "december":12, "12":12
+            };
+            return arr.sort((a, b) => {
+                let valA = String(a).trim().toLowerCase(); let valB = String(b).trim().toLowerCase();
+                if (/^\d{4}-\d{2}$/.test(valA) && /^\d{4}-\d{2}$/.test(valB)) return valA.localeCompare(valB);
+                let numA = mMap[valA] || 99; let numB = mMap[valB] || 99;
+                if (numA !== 99 && numB !== 99) return numA - numB;
+                if (numA !== 99) return -1;
+                if (numB !== 99) return 1;
+                return valA.localeCompare(valB);
+            });
+        }
+
+        function cleanAndMigrateData(dataArray) {
+            dataArray.forEach(r => {
+                f_pForecast.forEach(newMonth => {
+                    let oldMonth = newMonth.replace('202', '');
+                    if (r[oldMonth] !== undefined) {
+                        if (r[newMonth] === undefined || r[newMonth] === '') {
+                            r[newMonth] = r[oldMonth];
+                        }
+                        delete r[oldMonth]; 
+                    }
+                });
+            });
+            return dataArray;
+        }
+
+        function getRecordValue(r, f) {
+            return r[f] !== undefined ? r[f] : undefined;
+        }
+
+        const f_wG1_w = ['วันที่บันทึกข้อมูล', 'เดือน', 'ปี', 'ผู้บันทึกข้อมูล', 'ชื่อร้านค้า', 'อำเภอ', 'จังหวัด', 'Wholesale Region', 'เบอร์โทร', 'ชื่อคนติดต่อ', 'ตำแหน่ง'];
+        const f_wG2_w = ['ซื้อของกับร้านผู้แทนจำหน่าย', 'จังหวัด/ร้านตัวแทน', 'เงื่อนไขการซื้อ', 'ประวัติการขายมวลเบา', 'แบรนด์มวลเบาที่ขาย', 'ราคา'];
+        const f_wG3_w = ['Opp 7.5cmจำนวน/สต็อก', 'Opp10cm/ตร.ม.', 'Opp12.5cm/ตร.ม.', 'Opp15cm/ตร.ม.', 'Opp17.5cm/ตร.ม.', 'Opp20cm/ตร.ม.', 'Opp.Other sizeรวม/ตร.ม.', 'Oppรวมทั้งหมด', 'สต็อกในร้าน/ตร.ม.', 'Opp Counterจำนวน/ตร.ม', 'Opp Lintelจำนวน/ตร.ม'];
+        const f_wG4_w = ['อิฐแดง', 'จำนนวน/ตร.ม.อิฐแดง', 'ราคาอิฐแดง/ก้อน', 'คอนกรีตบล็อก', 'จำนนวน/ตร.ม.คอนกรีตบล็อก', 'ราคาคอนกรีตบล็อก/ก้อน', 'ขายปูนยี่ห้อ'];
+        const f_wG5_w = ['แผนที่', 'รูปร้านค้า', 'เดือนที่เริ่มใช้', 'Sales Status', 'เดือนที่ปิดการขาย', 'แบรนด์ที่ปิดการขาย', 'สินค้าที่ปิดการขาย', 'เหตุผล Win / Loss', 'เดือน Last updated', 'ปี Last updated', 'Note ทีมขาย', 'Next follow-up', 'วันที่ต้องติดตามต่อ', 'หมายเหตุ'];
+        
+        const f_pG1 = ['วันที่บันทึกข้อมูล', 'เดือน', 'ปี', 'ผู้บันทึกข้อมูล', 'ชื่อโครงการ', 'Project Region', 'อำเภอ', 'จังหวัด', 'เจ้าของโครงการ', 'Owner Nationality', 'Customer Group', 'ผู้รับเหมา', 'เบอร์โทร', 'ชื่อผู้ติดต่อ', 'ตำแหน่ง'];
+        const f_pG2 = ['ช่องทางการขาย', 'ร้านผู้แทนจำหน่าย', 'จังหวัดร้านผู้แทน', 'Dealer Region', 'ราชการ/เอกชน', 'Type(R/C/I/F)', 'ลักษณะโครงการ', 'ประเภทโครงการ', 'Product Spec เดิม', 'Product', 'ชั้นคุณภาพ', 'ขนาด'];
+        const f_pG3 = ['Opp7.5cm/ตร.ม.', 'Opp9cm/ตร.ม.', 'Opp10cm/ตร.ม.', 'Opp12.5cm/ตร.ม.', 'Opp15cm/ตร.ม.', 'Opp17.5cm/ตร.ม.', 'Opp20cm/ตร.ม.', 'รวมOpp7.5cm/9cm', 'Opp.Other sizeรวม/ตร.ม.', 'Opp.รวม/ตร.ม.', 'Opp Counterจำนวน/ตร.ม', 'Opp Lintelจำนวน/ตร.ม'];
+        const f_pG4 = ['ราคาฐาน7.5cmG2', 'ราคาฐาน7.5cmG4', 'ราคาWall', 'เงื่อนไข', 'ราคา/คิว/Counter', 'ราคา/คิวLintel', 'แผนที่', 'รูปหน้างาน', 'เดือนที่เริ่มใช้', 'Sales Status', 'เดือนที่ปิดการขาย', 'สินค้าที่ปิดการขาย', 'เหตุผล (Win / Loss)', 'เดือน Last updated', 'ปี Last updated', 'Note ทีมขาย', 'หมายเหตุ'];
+        
+        const f_pForecast = ['Jan2026', 'Feb2026', 'Mar2026', 'Apr2026', 'May2026', 'Jun2026', 'Jul2026', 'Aug2026', 'Sep2026', 'Oct2026', 'Nov2026', 'Dec2026', 'Jan2027', 'Feb2027', 'Mar2027', 'Apr2027', 'May2027', 'Jun2027', 'Jul2027', 'Aug2027', 'Sep2027', 'Oct2027', 'Nov2027', 'Dec2027'];
+        
+        const fieldsWholesale = [...f_wG1_w, ...f_wG2_w, ...f_wG3_w, ...f_wG4_w, ...f_wG5_w];
+        const fieldsProject = [...f_pG1, ...f_pG2, ...f_pG3, ...f_pG4, ...f_pForecast];
+
+        const filtersConfig = {
+            wholesale: [
+                { id: 'f1', label: 'ปี', field: 'ปี' }, { id: 'f2', label: 'เดือน', field: 'เดือน' }, { id: 'f3', label: 'จังหวัด', field: 'จังหวัด' },
+                { id: 'f4', label: 'ภูมิภาค (Region)', field: 'Wholesale Region' }, { id: 'f5', label: 'ผู้บันทึกข้อมูล', field: 'ผู้บันทึกข้อมูล' }, 
+                { id: 'f6', label: 'ร้านค้า', field: 'ชื่อร้านค้า' }, { id: 'f7', label: 'แบรนด์มวลเบา', field: 'แบรนด์มวลเบาที่ขาย' }, { id: 'f8', label: 'ร้านผู้แทนจำหน่าย', field: 'ซื้อของกับร้านผู้แทนจำหน่าย' }
+            ],
+            project: [
+                { id: 'f1', label: 'ปี', field: 'ปี' }, { id: 'f2', label: 'เดือน', field: 'เดือน' }, { id: 'f3', label: 'จังหวัด', field: 'จังหวัด' },
+                { id: 'f4', label: 'ผู้บันทึก', field: 'ผู้บันทึกข้อมูล' }, { id: 'f5', label: 'ร้านผู้แทนจำหน่าย', field: 'ร้านผู้แทนจำหน่าย' }, 
+                { id: 'f6', label: 'Product', field: 'Product' }, { id: 'f7', label: 'ผู้รับเหมา', field: 'ผู้รับเหมา' }, { id: 'f8', label: 'Product Spec เดิม', field: 'Product Spec เดิม' }
+            ]
+        };
+
+        const colorPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e', '#64748b', '#d946ef', '#06b6d4', '#eab308'];
+        let statusColorMap = {}; 
+        function getColorsForLabels(labels) { return labels.map(label => { if (!statusColorMap[label]) statusColorMap[label] = colorPalette[Object.keys(statusColorMap).length % colorPalette.length]; return statusColorMap[label]; }); }
+        
+        const datalabelsConfig = {
+            formatter: (v, ctx) => { let sum = 0; ctx.chart.data.datasets[0].data.map(d => { sum += d; }); return (v > 0 && sum > 0) ? (v * 100 / sum).toFixed(1) + "%" : null; },
+            color: '#fff', font: { weight: 'bold', size: 11, family: 'Sarabun' }, textStrokeColor: 'rgba(0,0,0,0.4)', textStrokeWidth: 2, align: 'center', anchor: 'center'
+        };
+
+        function getActiveFields() { return currentMode === 'wholesale' ? fieldsWholesale : fieldsProject; }
+        function getActiveDB() { return currentMode === 'wholesale' ? dbWholesale : dbProject; }
+
+        function setMode(mode) {
+            if(mode === currentMode && document.getElementById('formWholesale').innerHTML !== '') return; 
+            currentMode = mode;
+            
+            document.getElementById('btnModeWholesale').className = mode === 'wholesale' ? 'mode-active px-6 py-1.5 rounded-full text-sm font-bold transition flex items-center shadow' : 'mode-inactive px-6 py-1.5 rounded-full text-sm font-bold transition flex items-center hover:bg-gray-50';
+            document.getElementById('btnModeProject').className = mode === 'project' ? 'mode-active px-6 py-1.5 rounded-full text-sm font-bold transition flex items-center shadow' : 'mode-inactive px-6 py-1.5 rounded-full text-sm font-bold transition flex items-center hover:bg-gray-50';
+            document.getElementById('lblModeForm').innerText = mode === 'wholesale' ? 'ร้านค้า' : 'โครงการ';
+            document.getElementById('formTitle').innerText = mode === 'wholesale' ? 'ฟอร์มบันทึกข้อมูลร้านค้า' : 'ฟอร์มบันทึกข้อมูลโครงการ';
+            document.getElementById('dashTitle').innerText = mode === 'wholesale' ? 'แดชบอร์ดสรุปผล (ร้านค้า)' : 'แดชบอร์ดสรุปผล (โครงการ)';
+            
+            if(mode === 'wholesale') {
+                document.getElementById('formWholesale').classList.remove('hidden'); document.getElementById('formProject').classList.add('hidden'); 
+                document.getElementById('forecastContainer').classList.add('hidden'); document.getElementById('projectExtraReports').classList.add('hidden');
+            } else {
+                document.getElementById('formProject').classList.remove('hidden'); document.getElementById('formWholesale').classList.add('hidden'); 
+                document.getElementById('forecastContainer').classList.remove('hidden'); document.getElementById('projectExtraReports').classList.remove('hidden');
+            }
+            setupFilterLabels(); cancelEdit(); updateDataLists(); renderTable();
+            if(!document.getElementById('dashboardTab').classList.contains('hidden')) resetFilters();
+        }
+
+        function getLocation(inputId) {
+            const btn = document.getElementById('btn-loc-' + inputId); if(!btn) return;
+            const origHtml = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            if (!navigator.geolocation) { alert("อุปกรณ์หรือเบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง (GPS)"); btn.innerHTML = origHtml; return; }
+            if (window.isSecureContext === false) { alert("เบราว์เซอร์ไม่อนุญาตให้เข้าถึงตำแหน่ง\nกรุณากดปุ่มเปิดแผนที่ 🗺️ เพื่อค้นหาและคัดลอกลิงก์มาวางแทนครับ"); btn.innerHTML = origHtml; return; }
+            navigator.geolocation.getCurrentPosition(
+                (position) => { document.getElementById(inputId).value = `https://maps.google.com/?q=${position.coords.latitude},${position.coords.longitude}`; btn.innerHTML = origHtml; },
+                (error) => { alert("ไม่สามารถดึงตำแหน่งได้! กรุณาตรวจสอบสิทธิ์ Location"); btn.innerHTML = origHtml; },
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
+        function initForms() {
+            buildFormHTML('formWholesale', 'w', fieldsWholesale, [ { title: '1. ข้อมูลทั่วไปและร้านค้า', fields: f_wG1_w }, { title: '2. ข้อมูลการซื้อขาย', fields: f_wG2_w }, { title: '3. ปริมาณความต้องการและสต็อก', fields: f_wG3_w }, { title: '4. ข้อมูลวัสดุทดแทน (อิฐแดง/บล็อก)', fields: f_wG4_w }, { title: '5. สถานะและการติดตาม', fields: f_wG5_w } ]);
+            buildFormHTML('formProject', 'p', fieldsProject, [ { title: '1. ข้อมูลทั่วไปและโครงการ', fields: f_pG1 }, { title: '2. ข้อมูลงานขายและผลิตภัณฑ์', fields: f_pG2 }, { title: '3. ปริมาณความต้องการ', fields: f_pG3 }, { title: '4. ราคา สถานะ และการติดตาม', fields: f_pG4 }, { title: '5. คาดการณ์การใช้สินค้า (Forecast)', fields: f_pForecast, isForecast: true } ]);
+        }
+
+        function buildFormHTML(containerId, prefix, allModeFields, groups) {
+            let html = '';
+            groups.forEach(g => {
+                let numIndex = g.title.split('.')[0]; let headerText = g.title.split('. ')[1]; let gridClass = g.isForecast ? "grid grid-cols-2 md:grid-cols-6 gap-3" : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5";
+                html += `<div class="bg-gray-50/50 p-5 rounded-2xl border border-gray-100"><h3 class="text-lg font-bold text-blue-800 mb-4 flex items-center"><span class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">${numIndex}</span> ${headerText}</h3><div class="${gridClass}">`;
+                g.fields.forEach(field => {
+                    let fIndex = allModeFields.indexOf(field); let inputId = `inp-${prefix}-${fIndex}`; let dlId = `dl-${prefix}-${fIndex}`; let inputType = 'text'; let addAttrs = `class="w-full border-gray-200 rounded-xl shadow-sm border p-2.5 focus:ring-2 focus:ring-blue-500 text-sm" placeholder="ระบุ${field}"`; let useDatalist = true;
+                    
+                    // บังคับให้ "ผู้บันทึกข้อมูล" ออโต้จากชื่อคนที่ Login
+                    if (field === 'ผู้บันทึกข้อมูล') {
+                        let userName = sessionStorage.getItem('userName') || '';
+                        addAttrs += ` value="${userName}"`;
+                    }
+
+                    if (field === 'แผนที่') { html += `<div><label class="block text-sm font-medium text-gray-700 mb-1.5">${field}</label><div class="flex"><input type="text" id="${inputId}" class="w-full border-gray-200 rounded-l-xl shadow-sm border p-2.5 focus:ring-2 focus:ring-blue-500 text-sm" placeholder="วางลิงก์หรือดึงตำแหน่ง"><button type="button" id="btn-loc-${inputId}" onclick="getLocation('${inputId}')" class="bg-red-50 text-red-500 hover:bg-red-100 border border-l-0 border-gray-200 px-3.5 transition"><i class="fas fa-crosshairs"></i></button><button type="button" onclick="window.open('https://maps.google.com', '_blank')" class="bg-blue-50 text-blue-500 hover:bg-blue-100 border border-l-0 border-gray-200 rounded-r-xl px-3.5 transition"><i class="fas fa-map"></i></button></div></div>`; return; }
+                    else if (field.includes('วันที่') && !field.includes('ต้องติดตามต่อ')) inputType = 'date'; else if (field === 'วันที่ต้องติดตามต่อ') inputType = 'date'; else if (field.includes('เดือนที่')) inputType = 'month'; else if (field.includes('รูป')) { inputType = 'file'; addAttrs += ` accept="image/*"`; } else if (field === 'Opp.รวม/ตร.ม.' || field === 'Opp.Other sizeรวม/ตร.ม.' || field === 'Oppรวมทั้งหมด' || field === 'รวมOpp7.5cm/9cm') { addAttrs = `readonly class="w-full border-blue-200 rounded-xl shadow-sm border p-2.5 bg-blue-50 text-blue-800 font-bold focus:outline-none text-sm" placeholder="0"`; useDatalist = false; } else if (field.includes('ตร.ม.') || field.includes('ราคา') || g.isForecast || field.includes('จำนวน') || field.includes('Opp')) { inputType = 'text'; addAttrs = `inputmode="decimal" class="w-full border-gray-200 rounded-xl shadow-sm border p-2.5 focus:ring-2 focus:ring-blue-500 text-sm opp-input" placeholder="0" oninput="calcOpp()"`; useDatalist = false; }
+                    if (field === 'เดือน Last updated' || field === 'ปี Last updated') { inputType = 'text'; useDatalist = true; }
+                    let dlist = useDatalist && inputType === 'text' ? `list="${dlId}" autocomplete="on"` : ''; let dlistHtml = useDatalist && inputType === 'text' ? `<datalist id="${dlId}"></datalist>` : ''; html += `<div><label class="block text-sm font-medium text-gray-700 mb-1.5">${field}</label><input type="${inputType}" id="${inputId}" ${addAttrs} ${dlist}>${dlistHtml}</div>`;
+                });
+                html += `</div></div>`;
+            });
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        function getSafeNumVal(prefix, fieldArray, fieldName) { let idx = fieldArray.indexOf(fieldName); if (idx === -1) return 0; let el = document.getElementById(`inp-${prefix}-${idx}`); if (el && el.value) { let val = parseFloat(el.value.replace(/,/g, '')); return isNaN(val) ? 0 : val; } return 0; }
+
+        function calcOpp() {
+            if (currentMode === 'project') {
+                let sum7_9 = getSafeNumVal('p', fieldsProject, 'Opp7.5cm/ตร.ม.') + getSafeNumVal('p', fieldsProject, 'Opp9cm/ตร.ม.');
+                let sumOther = getSafeNumVal('p', fieldsProject, 'Opp10cm/ตร.ม.') + getSafeNumVal('p', fieldsProject, 'Opp12.5cm/ตร.ม.') + getSafeNumVal('p', fieldsProject, 'Opp15cm/ตร.ม.') + getSafeNumVal('p', fieldsProject, 'Opp17.5cm/ตร.ม.') + getSafeNumVal('p', fieldsProject, 'Opp20cm/ตร.ม.');
+                let el7_9 = document.getElementById(`inp-p-${fieldsProject.indexOf('รวมOpp7.5cm/9cm')}`); let elOther = document.getElementById(`inp-p-${fieldsProject.indexOf('Opp.Other sizeรวม/ตร.ม.')}`); let elTot = document.getElementById(`inp-p-${fieldsProject.indexOf('Opp.รวม/ตร.ม.')}`);
+                if(el7_9) el7_9.value = sum7_9 > 0 ? sum7_9 : ''; if(elOther) elOther.value = sumOther > 0 ? sumOther : ''; if(elTot) elTot.value = (sum7_9 + sumOther) > 0 ? (sum7_9 + sumOther) : '';
+            } else if (currentMode === 'wholesale') {
+                let v7_5 = getSafeNumVal('w', fieldsWholesale, 'Opp 7.5cmจำนวน/สต็อก');
+                let sumOther = getSafeNumVal('w', fieldsWholesale, 'Opp10cm/ตร.ม.') + getSafeNumVal('w', fieldsWholesale, 'Opp12.5cm/ตร.ม.') + getSafeNumVal('w', fieldsWholesale, 'Opp15cm/ตร.ม.') + getSafeNumVal('w', fieldsWholesale, 'Opp17.5cm/ตร.ม.') + getSafeNumVal('w', fieldsWholesale, 'Opp20cm/ตร.ม.');
+                let elOther = document.getElementById(`inp-w-${fieldsWholesale.indexOf('Opp.Other sizeรวม/ตร.ม.')}`); let elTot = document.getElementById(`inp-w-${fieldsWholesale.indexOf('Oppรวมทั้งหมด')}`);
+                if(elOther) elOther.value = sumOther > 0 ? sumOther : ''; if(elTot) elTot.value = (v7_5 + sumOther) > 0 ? (v7_5 + sumOther) : '';
+            }
+        }
+
+        function updateDataLists() {
+            const db = getActiveDB(); const fields = getActiveFields(); const prefix = currentMode === 'wholesale' ? 'w' : 'p';
+            fields.forEach((field, i) => { const dl = document.getElementById(`dl-${prefix}-${i}`); if (dl) { let vals = new Set(); db.forEach(r => { let val = getRecordValue(r, field); if(val) vals.add(String(val).trim()); }); let sortedVals = field.includes('เดือน') ? sortChronological(Array.from(vals)) : Array.from(vals).sort(); dl.innerHTML = sortedVals.map(v => `<option value="${v}"></option>`).join(''); } });
+        }
+
+        function viewImage(dataUrl) {
+            const modal = document.createElement('div'); modal.className = 'fixed inset-0 z-[100] bg-gray-900/90 flex items-center justify-center p-4 backdrop-blur-sm cursor-zoom-out transition-all';
+            modal.innerHTML = `<img src="${dataUrl}" class="max-w-full max-h-full rounded-xl shadow-2xl border-4 border-white/10"><div class="absolute top-6 right-6 text-white text-4xl hover:text-red-500 transition cursor-pointer"><i class="fas fa-times-circle"></i></div>`;
+            modal.onclick = () => document.body.removeChild(modal); document.body.appendChild(modal);
+        }
+
+        async function getBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => { if (file.type.startsWith('image/')) { const img = new Image(); img.src = reader.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 500; const MAX_HEIGHT = 500; let width = img.width; let height = img.height; if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/jpeg', 0.6)); }; img.onerror = () => resolve(reader.result); } else { resolve(reader.result); } }; reader.onerror = error => reject(error); }); }
+
+        function renderTable() {
+            const head = document.getElementById('tableHead'); const body = document.getElementById('tableBody');
+            const term = document.getElementById('searchInput').value.toLowerCase(); const fields = getActiveFields();
+            let h = '<tr>'; fields.forEach(f => h += `<th class="px-5 py-4">${f}</th>`); h += `<th class="px-5 py-4 sticky-col text-center">จัดการ</th></tr>`; head.innerHTML = h;
+            let filtered = getActiveDB().map((r, i) => { r.oIdx = i; return r; });
+            if(!document.getElementById('dashboardTab').classList.contains('hidden')) { filtersConfig[currentMode].forEach(f => { let val = document.getElementById(f.id).value; if(val) filtered = filtered.filter(r => String(getRecordValue(r, f.field)||'').trim() === val); }); }
+            if(term) filtered = filtered.filter(r => { let match = false; for (let key in r) { if (String(r[key]).toLowerCase().indexOf(term) !== -1) { match = true; break; } } return match; });
+            let bHtml = '';
+            for (let k = filtered.length - 1; k >= 0; k--) {
+                let r = filtered[k]; bHtml += `<tr class="hover:bg-blue-50 transition">`;
+                fields.forEach(f => {
+                    let v = getRecordValue(r, f); v = v || '-';
+                    if(f === 'แผนที่' && String(v).indexOf('http') === 0) { v = `<a href="${v}" target="_blank" class="text-blue-600 underline text-xs whitespace-nowrap"><i class="fas fa-map-marker-alt"></i> ดูแผนที่</a>`; }
+                    else if ((f === 'รูปร้านค้า' || f === 'รูปหน้างาน') && String(v).indexOf('data:image') === 0) { v = `<div class="flex items-center space-x-2"><img src="${v}" class="w-10 h-10 object-cover rounded cursor-pointer border border-gray-200 shadow-sm" onclick="viewImage('${v}')" title="คลิกเพื่อดูรูปใหญ่"><a href="${v}" download="${f}_${Date.now()}.jpg" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm"><i class="fas fa-download mr-1"></i> โหลด</a></div>`; }
+                    bHtml += `<td class="px-5 py-3 truncate max-w-[200px]" title="${(typeof v === 'string' && v.indexOf('<') === -1) ? v : ''}">${v}</td>`;
+                });
+                bHtml += `<td class="px-5 py-3 sticky-col text-center"><button onclick="editRow(${r.oIdx})" class="text-blue-500 bg-blue-50 p-2 rounded-full hover:bg-blue-100 mx-1"><i class="fas fa-edit"></i></button><button onclick="deleteRow(${r.oIdx})" class="text-red-500 bg-red-50 p-2 rounded-full hover:bg-red-100 mx-1"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+            }
+            body.innerHTML = bHtml;
+        }
+
+        function formatDateToThai(dStr) { if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) { let p = dStr.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; } return dStr || ''; }
+        function formatValueForInput(val, type) { if (!val) return ''; try { if (type === 'date') { if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) { let p = val.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; } if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val; const d = new Date(val); if (!isNaN(d.getTime())) return d.toISOString().split('T')[0]; } else if (type === 'month') { if (/^\d{4}-\d{2}$/.test(val)) return val; const d = new Date(val); if (!isNaN(d.getTime())) return d.toISOString().substring(0,7); } } catch(e) {} return val; }
+
+        async function saveData() {
+            const btn = document.getElementById('saveBtn'); const origBtnHtml = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> กำลังบันทึก...'; btn.disabled = true;
+            const fields = getActiveFields(); const prefix = currentMode === 'wholesale' ? 'w' : 'p'; let newRow = {};
+            for (let i = 0; i < fields.length; i++) {
+                let f = fields[i]; let el = document.getElementById(`inp-${prefix}-${i}`); let val = el ? el.value : '';
+                if (el && el.type === 'file') { if (el.files.length > 0) { try { val = await getBase64(el.files[0]); } catch(e) { val = el.files[0].name; } } else if(editIndex >= 0) { val = getRecordValue(getActiveDB()[editIndex], f) || ''; } else { val = ''; } }
+                else if (el && el.type === 'date') { val = formatDateToThai(val); }
+                if((f.indexOf('ตร.ม.') !== -1 || f.indexOf('ราคา') !== -1 || f_pForecast.indexOf(f) !== -1 || f.indexOf('จำนวน') !== -1 || f.indexOf('Opp') !== -1) && typeof val === 'string') { let c = val.replace(/,/g, '').trim(); if(!isNaN(c) && c !== '') val = c; }
+                newRow[f] = val;
+            }
+            if(editIndex >= 0) { getActiveDB()[editIndex] = newRow; alert('อัปเดตสำเร็จ!'); cancelEdit(); } else { getActiveDB().push(newRow); alert('บันทึกสำเร็จ!'); document.getElementById(currentMode === 'wholesale' ? 'formWholesale' : 'formProject').reset(); }
+            saveLocalAndCloud(); updateDataLists(); renderTable(); switchTab('dashboardTab'); btn.innerHTML = origBtnHtml; btn.disabled = false;
+        }
+
+        function editRow(idx) { editIndex = idx; const row = getActiveDB()[idx]; const prefix = currentMode === 'wholesale' ? 'w' : 'p'; getActiveFields().forEach((f, i) => { const el = document.getElementById(`inp-${prefix}-${i}`); if(el && el.type !== 'file') el.value = formatValueForInput(getRecordValue(row, f) || '', el.type); }); document.getElementById('saveBtn').innerHTML = '<i class="fas fa-check mr-1"></i> อัปเดต'; document.getElementById('saveBtn').className = "bg-emerald-500 text-white px-5 py-2 rounded-xl font-medium shadow-md hover:bg-emerald-600 transition"; document.getElementById('cancelBtn').classList.remove('hidden'); switchTab('formTab'); }
+        function cancelEdit() { editIndex = -1; document.getElementById(currentMode === 'wholesale' ? 'formWholesale' : 'formProject').reset(); document.getElementById('saveBtn').innerHTML = '<i class="fas fa-save mr-1"></i> บันทึกข้อมูล'; document.getElementById('saveBtn').className = "bg-blue-600 text-white px-5 py-2 rounded-xl font-medium shadow-md hover:bg-blue-700 transition"; document.getElementById('cancelBtn').classList.add('hidden'); }
+        async function deleteRow(idx) { if(confirm('ลบข้อมูลนี้ใช่หรือไม่?')) { getActiveDB().splice(idx, 1); saveLocalAndCloud(); updateDataLists(); renderTable(); updateCharts(); } }
+        async function clearData() { const pwd = prompt(`ล้างข้อมูล ${currentMode === 'wholesale' ? 'ร้านค้า' : 'โครงการ'} ทั้งหมด\nกรอกรหัสผ่าน (ผู้ดูแลระบบ):`); if (pwd === 'Guide081#') { if(currentMode === 'wholesale') dbWholesale = []; else dbProject = []; saveLocalAndCloud(); updateDataLists(); renderTable(); updateCharts(); alert('ล้างข้อมูลสำเร็จ'); } }
+        
+        async function saveLocalAndCloud() { 
+            dbProject = cleanAndMigrateData(dbProject);
+            localStorage.setItem('scgWholesaleData', JSON.stringify(dbWholesale)); 
+            localStorage.setItem('scgProjectData', JSON.stringify(dbProject)); 
+            pushToCloud('wholesale'); 
+            pushToCloud('project'); 
+        }
+
+        function loadLocalData() {
+            try { dbWholesale = JSON.parse(localStorage.getItem('scgWholesaleData')) || []; } catch(e) { dbWholesale = []; }
+            try { dbProject = JSON.parse(localStorage.getItem('scgProjectData')) || []; } catch(e) { dbProject = []; }
+            
+            dbProject = cleanAndMigrateData(dbProject);
+            initForms(); setMode('wholesale'); 
+
+            const defaultApiW = "https://script.google.com/macros/s/AKfycbxEbY7pzT517zD4porPRgidWipcII-KCIl-xefdBu2NVc8wsA5aBH6zmaJ9icQd97CDtg/exec";
+            const defaultApiP = "https://script.google.com/macros/s/AKfycbxBj1vh0_yIg9Uj-D8cqCeFs_Y4hWy3Rc9l5jB9VLbP0qIKIkqmbA9Jzju7CD4ziHeh/exec";
+
+            if (!localStorage.getItem('cloudApiWholesale')) localStorage.setItem('cloudApiWholesale', defaultApiW);
+            if (!localStorage.getItem('cloudApiProject')) localStorage.setItem('cloudApiProject', defaultApiP);
+
+            document.getElementById('apiWholesale').value = localStorage.getItem('cloudApiWholesale'); 
+            document.getElementById('apiProject').value = localStorage.getItem('cloudApiProject');
+            
+            if(localStorage.getItem('cloudApiWholesale') || localStorage.getItem('cloudApiProject')) pullFromCloud();
+        }
+
+        function saveCloudSettings() { localStorage.setItem('cloudApiWholesale', document.getElementById('apiWholesale').value); localStorage.setItem('cloudApiProject', document.getElementById('apiProject').value); document.getElementById('cloudModal').classList.add('hidden'); pullFromCloud(); }
+        function setSyncUI(status) { const el = document.getElementById('syncStatus'); if(status === 'loading') { el.innerHTML = '<i class="fas fa-spin fa-circle-notch"></i> ซิงค์...'; el.className = "bg-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold"; } else if(status === 'online') { el.innerHTML = '<i class="fas fa-check-circle"></i> ออนไลน์'; el.className = "bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold"; } else { el.innerHTML = '<i class="fas fa-wifi"></i> ออฟไลน์'; el.className = "bg-gray-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold"; } }
+
+        async function pullFromCloud() {
+            let apiW = localStorage.getItem('cloudApiWholesale'); let apiP = localStorage.getItem('cloudApiProject'); if(!apiW && !apiP) return;
+            setSyncUI('loading');
+            try { 
+                if(apiW) { let rw = await fetch(apiW); if(rw.ok) dbWholesale = await rw.json(); } 
+                if(apiP) { 
+                    let rp = await fetch(apiP); 
+                    if(rp.ok) { 
+                        dbProject = await rp.json(); 
+                        dbProject = cleanAndMigrateData(dbProject);
+                    } 
+                }
+                saveLocalAndCloud(); setSyncUI('online'); updateDataLists(); renderTable(); if(!document.getElementById('dashboardTab').classList.contains('hidden')) updateCharts();
+            } catch(e) { setSyncUI('offline'); }
+        }
+
+        async function pushToCloud(mode) {
+            let api = localStorage.getItem(mode === 'wholesale' ? 'cloudApiWholesale' : 'cloudApiProject'); if(!api) return;
+            try { await fetch(api, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(mode === 'wholesale' ? dbWholesale : dbProject) }); setSyncUI('online'); } catch(e) { setSyncUI('offline'); }
+        }
+
+        function setupFilterLabels() {
+            filtersConfig[currentMode].forEach(f => { document.getElementById(`lbl_${f.id}`).innerText = f.label; });
+            document.getElementById('dynamicChartFilter').innerHTML = currentMode === 'wholesale' ? ['แบรนด์มวลเบาที่ขาย', 'Sales Status', 'จังหวัด', 'ซื้อของกับร้านผู้แทนจำหน่าย', 'เหตุผล Win / Loss'].map(o=>`<option value="${o}">${o}</option>`).join('') : ['Product Spec เดิม', 'Product', 'ร้านผู้แทนจำหน่าย', 'ช่องทางการขาย', 'ลักษณะโครงการ'].map(o=>`<option value="${o}">${o}</option>`).join('');
+        }
+
+        function populateFilterOptions() {
+            const db = getActiveDB(); const conf = filtersConfig[currentMode];
+            conf.forEach(f => { let st = []; db.forEach(r => { let val = getRecordValue(r, f.field); if(val && st.indexOf(String(val).trim()) === -1) st.push(String(val).trim()); }); let el = document.getElementById(f.id); let cur = el.value; let sortedArr = f.field.includes('เดือน') ? sortChronological(st) : st.sort(); el.innerHTML = `<option value="">-- ทุก${f.label} --</option>` + sortedArr.map(v => `<option value="${v}">${v}</option>`).join(''); el.value = cur; });
+        }
+
+        function resetFilters() { filtersConfig[currentMode].forEach(f => document.getElementById(f.id).value = ''); updateCharts(); }
+        function getFilteredDB() { let data = getActiveDB(); filtersConfig[currentMode].forEach(f => { let val = document.getElementById(f.id).value; if(val) data = data.filter(r => String(getRecordValue(r, f.field)||'').trim() === val); }); return data; }
+        
+        function destroyCharts() { 
+            ['c1','c2','c3','c4','cCustom','cFore','cCounter','cLintel','cTrend', 'cBacklog', 'cBacklogRegion', 'cStatusMonth', 'cRegionBrick', 'cRegionOther', 'cRegionPrecast'].forEach(k => { if(chartInstances[k]) chartInstances[k].destroy(); }); 
+        }
+
+        function categorizeStatus(s) {
+            let st = String(s).toLowerCase().trim();
+            if(st.includes('win')) return 'Win';
+            if(st.includes('loss') || st.includes('lost')) return 'Loss';
+            if(st.includes('follow') || st.includes('ติดตาม')) return 'Follow';
+            return 'Other'; 
+        }
+
+        function getRecordBacklog(r) {
+            let st = categorizeStatus(r['Sales Status']);
+            if (st !== 'Win') return 0; 
+            let sum = 0;
+            f_pForecast.forEach(m => { sum += parseFloat(String(getRecordValue(r, m)||'').replace(/,/g,'')) || 0; });
+            return sum;
+        }
+
+        function showProjectDrillDown(reportMode, type, region, status, month) {
+            let data = currentFilteredProjectData;
+
+            if (reportMode === 'BacklogRegion') {
+                data = data.filter(r => categorizeStatus(r['Sales Status']) === 'Win');
+                if (region !== 'all') {
+                    data = data.filter(r => String(r['Project Region']||'ไม่ระบุ').trim() === region);
+                }
+                if (month !== 'ALL') {
+                    data = data.filter(r => (parseFloat(String(getRecordValue(r, month)||'').replace(/,/g,'')) || 0) > 0);
+                }
+            } 
+            else {
+                if (reportMode === 'Region') {
+                    if (type === 'brick') {
+                        data = data.filter(r => { let s = String(r['Product Spec เดิม']||'').trim(); return s === 'อิฐมอญ' || s.includes('อิฐมอญ'); });
+                    } else if (type === 'other') {
+                        data = data.filter(r => { let p = String(r['Product']||'').trim().toLowerCase(); return p === 'alc other sizes' || p.includes('alc other size'); });
+                    } else if (type === 'precast') {
+                        data = data.filter(r => { let p = String(r['Product']||'').trim().toLowerCase(); return p.includes('precast') || p.includes('พรีคาส'); });
+                    }
+                }
+                if (region !== 'all') {
+                    data = data.filter(r => String(r['Project Region']||'ไม่ระบุ').trim() === region);
+                }
+                if (month !== 'ALL') {
+                    let mSet = new Set(); currentFilteredProjectData.forEach(r => { 
+                        let m = String(r['เดือน Last updated']).trim();
+                        if(m) mSet.add(m); 
+                    });
+                    let months = sortChronological(Array.from(mSet)); if(months.length===0) months=['ไม่ระบุ'];
+                    
+                    data = data.filter(r => {
+                        let m = String(r['เดือน Last updated']).trim();
+                        if(!months.includes(m)) m = months[0];
+                        return m === month;
+                    });
+                }
+                if (status === 'Total') {
+                    data = data.filter(r => ['Win', 'Loss', 'Follow'].includes(categorizeStatus(r['Sales Status'])));
+                } else if (status === 'Back log') {
+                    data = data.filter(r => categorizeStatus(r['Sales Status']) === 'Win' && getRecordBacklog(r) > 0);
+                } else {
+                    data = data.filter(r => categorizeStatus(r['Sales Status']) === status);
+                }
+            }
+
+            const fieldsToShow = ['วันที่บันทึกข้อมูล', 'ชื่อโครงการ', 'Project Region', 'จังหวัด', 'ผู้รับเหมา', 'ร้านผู้แทนจำหน่าย', 'Dealer Region', 'Opp.รวม/ตร.ม.', 'เดือนที่เริ่มใช้', 'Sales Status', 'เดือน Last updated', 'ปี Last updated'];
+            
+            let title = '';
+            if (reportMode === 'BacklogRegion') {
+                title = `ข้อมูลรายละเอียด Back log`;
+                if(month !== 'ALL') title += ` | Forecast: ${month}`;
+                if(region !== 'all') title += ` | ภาค: ${region}`;
+            } else {
+                title = `ข้อมูลรายละเอียด: สถานะ ${status === 'Total' ? 'รวม (W+L+F)' : status}`;
+                if(month !== 'ALL') title += ` | เดือน: ${month}`;
+                if(region !== 'all') title += ` | ภาค: ${region}`;
+            }
+
+            document.getElementById('chartDetailsTitle').innerHTML = `<i class="fas fa-list text-blue-500 mr-2"></i> ${title}`;
+            const head = document.getElementById('chartDetailsHead'); 
+            const body = document.getElementById('chartDetailsBody');
+            
+            head.innerHTML = '<tr>' + fieldsToShow.map(f => `<th class="px-4 py-3 bg-blue-50 text-blue-800">${f}</th>`).join('') + '</tr>'; 
+            let html = ''; 
+            data.forEach(r => { 
+                html += '<tr class="hover:bg-blue-50 transition">'; 
+                fieldsToShow.forEach(f => { 
+                    let val = getRecordValue(r, f);
+                    if(f === 'Opp.รวม/ตร.ม.' && val) val = parseFloat(String(val).replace(/,/g,'')).toLocaleString(undefined, {maximumFractionDigits:2});
+                    html += `<td class="px-4 py-3 whitespace-nowrap">${val || '-'}</td>`; 
+                }); 
+                html += '</tr>'; 
+            }); 
+            if(data.length === 0) html = `<tr><td colspan="${fieldsToShow.length}" class="text-center py-8 text-gray-500 font-medium">ไม่พบข้อมูลที่ตรงกับเงื่อนไขนี้</td></tr>`;
+            
+            body.innerHTML = html; 
+            document.getElementById('chartDetailsModal').classList.remove('hidden');
+        }
+
+        function updateBacklogRegionSection() {
+            let data = currentFilteredProjectData.filter(r => categorizeStatus(r['Sales Status']) === 'Win');
+            
+            let ySel = document.getElementById('selYearBacklogRegion');
+            let rSel = document.getElementById('selRegionBacklogRegion');
+            let curY = ySel.value; let curR = rSel.value;
+            
+            let regions = [...new Set(data.map(r => String(r['Project Region']||'ไม่ระบุ').trim()))].sort();
+            
+            rSel.innerHTML = '<option value="ALL">-- ทุกภาค --</option>' + regions.map(rg => `<option value="${rg}">${rg}</option>`).join('');
+            rSel.value = regions.includes(curR) ? curR : 'ALL';
+            curR = rSel.value;
+            
+            if (curR !== 'ALL') {
+                data = data.filter(r => String(r['Project Region']||'ไม่ระบุ').trim() === curR);
+            }
+            
+            let filteredRegions = curR === 'ALL' ? regions : [curR];
+            
+            let displayMonths = f_pForecast;
+            if (curY !== 'ALL') {
+                displayMonths = f_pForecast.filter(m => m.endsWith(curY));
+            }
+
+            if (filteredRegions.length === 0 || displayMonths.length === 0) {
+                document.getElementById('table-backlog-region').innerHTML = '<tr><td class="p-4 text-center text-gray-500">ไม่มีข้อมูลตามเงื่อนไขที่เลือก</td></tr>';
+                if(chartInstances['cBacklogRegion']) chartInstances['cBacklogRegion'].destroy();
+                return;
+            }
+
+            let mx = {};
+            filteredRegions.forEach(rg => {
+                mx[rg] = {};
+                displayMonths.forEach(m => mx[rg][m] = 0);
+                mx[rg]['Total'] = 0;
+            });
+
+            data.forEach(r => {
+                let rg = String(r['Project Region']||'ไม่ระบุ').trim();
+                if(!filteredRegions.includes(rg)) return;
+                
+                displayMonths.forEach(m => {
+                    let vol = parseFloat(String(getRecordValue(r, m)||'').replace(/,/g,'')) || 0;
+                    mx[rg][m] += vol;
+                    mx[rg]['Total'] += vol;
+                });
+            });
+
+            let th = `<tr><th class="border p-3 bg-gray-100 font-bold text-gray-700 text-center sticky left-0 z-20 shadow-sm">Project Region</th>` + 
+                     displayMonths.map(m => `<th class="border p-3 bg-gray-100 font-bold text-gray-700 text-right min-w-[80px]">${m}</th>`).join('') + 
+                     `<th class="border p-3 bg-purple-100 font-bold text-purple-800 text-right min-w-[100px]">รวมทั้งหมด</th></tr>`;
+            
+            let tb = '';
+            let colTotals = {};
+            displayMonths.forEach(m => colTotals[m] = 0);
+            let grandTotal = 0;
+
+            filteredRegions.forEach(rg => {
+                let tds = displayMonths.map(m => {
+                    let v = mx[rg][m];
+                    colTotals[m] += v;
+                    return `<td class="border p-2 text-right text-purple-700 clickable-cell" onclick="showProjectDrillDown('BacklogRegion', 'none', '${rg}', 'Win', '${m}')" title="คลิกเพื่อดูรายละเอียด">${v.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`;
+                }).join('');
+                
+                grandTotal += mx[rg]['Total'];
+                let totalTd = `<td class="border p-2 text-right font-bold bg-purple-50 text-purple-800 clickable-cell hover:brightness-95" onclick="showProjectDrillDown('BacklogRegion', 'none', '${rg}', 'Win', 'ALL')" title="คลิกเพื่อดูรายละเอียด">${mx[rg]['Total'].toLocaleString(undefined,{maximumFractionDigits:2})}</td>`;
+                
+                tb += `<tr class="hover:bg-gray-50 bg-white"><td class="border p-3 font-bold bg-white text-center align-middle shadow-sm sticky left-0 z-10">${rg}</td>${tds}${totalTd}</tr>`;
+            });
+            
+            let footerTds = displayMonths.map(m => `<td class="border p-3 text-right font-bold text-purple-900">${colTotals[m].toLocaleString(undefined,{maximumFractionDigits:2})}</td>`).join('');
+            tb += `<tr class="bg-purple-100 border-t-2 border-purple-300"><td class="border p-3 font-bold text-center sticky left-0 z-10 bg-purple-100 shadow-sm">รวมทุกภาค</td>${footerTds}<td class="border p-3 text-right font-bold text-purple-900">${grandTotal.toLocaleString(undefined,{maximumFractionDigits:2})}</td></tr>`;
+
+            document.getElementById('table-backlog-region').innerHTML = `<thead class="sticky top-0 z-30 shadow-md">${th}</thead><tbody class="divide-y divide-gray-100">${tb}</tbody>`;
+
+            if(chartInstances['cBacklogRegion']) chartInstances['cBacklogRegion'].destroy();
+            let datasets = filteredRegions.map((rg, i) => {
+                return {
+                    label: rg,
+                    data: displayMonths.map(m => mx[rg][m]),
+                    borderColor: colorPalette[i % colorPalette.length],
+                    backgroundColor: colorPalette[i % colorPalette.length],
+                    fill: false,
+                    tension: 0.3,
+                    borderWidth: 2
+                };
+            });
+
+            chartInstances['cBacklogRegion'] = new Chart(document.getElementById('chartBacklogRegion'), {
+                type: 'line',
+                data: { labels: displayMonths, datasets: datasets },
+                options: { 
+                    layout: { padding: { top: 20, right: 10, left: 10, bottom: 10 } }, 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        datalabels: { display: false }, 
+                        legend: { position: 'bottom', labels: { font: { family: 'Sarabun', size: 11 }, padding: 15 } } 
+                    }, 
+                    scales: { 
+                        y: { beginAtZero: true, grace: '10%' },
+                        x: { ticks: { maxRotation: 45, minRotation: 45 } }
+                    } 
+                }
+            });
+        }
+
+        function updateExtraRegionSection(type) {
+            let baseFilter, tableId, chartId, selYearId, selRegionId, chartKey, oppField;
+            if (type === 'brick') {
+                baseFilter = r => {
+                    let spec = String(r['Product Spec เดิม']||'').trim();
+                    return spec === 'อิฐมอญ' || spec.includes('อิฐมอญ');
+                };
+                tableId = 'table-region-brick'; chartId = 'chartRegionBrick';
+                selYearId = 'selYearBrick'; selRegionId = 'selRegionBrick';
+                chartKey = 'cRegionBrick'; oppField = 'Opp.รวม/ตร.ม.'; 
+            } else if (type === 'other') {
+                baseFilter = r => {
+                    let prod = String(r['Product']||'').trim().toLowerCase();
+                    return prod === 'alc other sizes' || prod.includes('alc other size');
+                };
+                tableId = 'table-region-other'; chartId = 'chartRegionOther';
+                selYearId = 'selYearOther'; selRegionId = 'selRegionOther';
+                chartKey = 'cRegionOther'; oppField = 'Opp.รวม/ตร.ม.'; 
+            } else if (type === 'precast') {
+                baseFilter = r => {
+                    let prod = String(r['Product']||'').trim().toLowerCase();
+                    return prod.includes('precast') || prod.includes('พรีคาส');
+                };
+                tableId = 'table-region-precast'; chartId = 'chartRegionPrecast';
+                selYearId = 'selYearPrecast'; selRegionId = 'selRegionPrecast';
+                chartKey = 'cRegionPrecast'; oppField = 'Opp.รวม/ตร.ม.'; 
+            }
+
+            let data = currentFilteredProjectData.filter(baseFilter);
+            
+            let ySel = document.getElementById(selYearId);
+            let rSel = document.getElementById(selRegionId);
+            let curY = ySel.value; let curR = rSel.value;
+            
+            let years = [...new Set(data.map(r => String(r['ปี Last updated']).trim()))].sort();
+            let regions = [...new Set(data.map(r => String(r['Project Region']||'ไม่ระบุ').trim()))].sort();
+            
+            ySel.innerHTML = '<option value="ALL">-- ทุกปี --</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+            rSel.innerHTML = '<option value="ALL">-- ทุกภาค --</option>' + regions.map(rg => `<option value="${rg}">${rg}</option>`).join('');
+            
+            ySel.value = years.includes(curY) ? curY : 'ALL';
+            rSel.value = regions.includes(curR) ? curR : 'ALL';
+            curY = ySel.value; curR = rSel.value;
+            
+            if (curY !== 'ALL') data = data.filter(r => String(r['ปี Last updated']).trim() === curY);
+            if (curR !== 'ALL') data = data.filter(r => String(r['Project Region']||'ไม่ระบุ').trim() === curR);
+            
+            let mSet = new Set(); 
+            data.forEach(r => { 
+                let m = String(r['เดือน Last updated']).trim();
+                if(m) mSet.add(m); 
+            });
+            let months = sortChronological(Array.from(mSet)); 
+            if(months.length===0) months=['ไม่ระบุ'];
+            
+            let filteredRegions = curR === 'ALL' ? regions : [curR];
+            
+            if (data.length === 0) {
+                document.getElementById(tableId).innerHTML = '<tr><td class="p-4 text-center text-gray-500">ไม่มีข้อมูลตามเงื่อนไขที่เลือก</td></tr>';
+                if(chartInstances[chartKey]) chartInstances[chartKey].destroy();
+                return;
+            }
+
+            let mx = {};
+            filteredRegions.forEach(rg => {
+                mx[rg] = { 'Win':{}, 'Loss':{}, 'Follow':{}, 'Total':{}, 'Back log':{} };
+                months.forEach(m => { 
+                    mx[rg]['Win'][m]=0; mx[rg]['Loss'][m]=0; mx[rg]['Follow'][m]=0; 
+                    mx[rg]['Total'][m]=0; mx[rg]['Back log'][m]=0; 
+                });
+            });
+            
+            data.forEach(r => {
+                let rg = String(r['Project Region']||'ไม่ระบุ').trim();
+                if(!filteredRegions.includes(rg)) return;
+                
+                let m = String(r['เดือน Last updated']).trim();
+                if(!months.includes(m)) m = months[0];
+                
+                let st = categorizeStatus(r['Sales Status']);
+                let opp = parseFloat(String(r[oppField]||'').replace(/,/g,'')) || 0; 
+                let bl = getRecordBacklog(r);
+                
+                if(mx[rg][st] !== undefined) {
+                    mx[rg][st][m] += opp;
+                    mx[rg]['Total'][m] += opp;
+                }
+                mx[rg]['Back log'][m] += bl;
+            });
+
+            let th = `<tr><th class="border p-3 bg-gray-100 font-bold text-gray-700 text-center sticky left-0 z-20 shadow-sm">Project Region</th><th class="border p-3 bg-gray-100 font-bold text-gray-700 text-center sticky left-[120px] z-20 shadow-sm">สถานะ</th>` + months.map(m => `<th class="border p-3 bg-gray-100 font-bold text-gray-700 text-right min-w-[80px]">${m}</th>`).join('') + `<th class="border p-3 bg-blue-100 font-bold text-blue-800 text-right min-w-[100px]">รวมทั้งหมด</th></tr>`;
+            
+            let tb = '';
+            filteredRegions.forEach(rg => {
+                let statuses = [
+                    {k: 'Win', l: 'Win', c: 'text-green-600', bg: 'bg-green-50'},
+                    {k: 'Loss', l: 'Loss', c: 'text-red-600', bg: 'bg-red-50'},
+                    {k: 'Follow', l: 'Follow', c: 'text-yellow-600', bg: 'bg-yellow-50'},
+                    {k: 'Total', l: 'รวม (W+L+F)', c: 'text-blue-700 font-bold', bg: 'bg-blue-100 border-b-2 border-blue-200'}, 
+                    {k: 'Back log', l: 'Back log', c: 'text-purple-700 font-bold', bg: 'bg-purple-100 border-b-2 border-purple-200'}
+                ];
+                
+                statuses.forEach((sObj, idx) => {
+                    let rowSum = 0;
+                    let tds = months.map(m => { 
+                        let v = mx[rg][sObj.k][m]; rowSum += v; 
+                        return `<td class="border p-2 text-right ${sObj.c} clickable-cell" onclick="showProjectDrillDown('Region', '${type}', '${rg}', '${sObj.k}', '${m}')" title="คลิกเพื่อดูรายละเอียด">${v.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`; 
+                    }).join('');
+                    
+                    let bgTr = (idx === 3 || idx === 4) ? sObj.bg : 'hover:bg-gray-50 bg-white';
+                    let totalTd = `<td class="border p-2 text-right font-bold ${sObj.bg} ${sObj.c} clickable-cell hover:brightness-95" onclick="showProjectDrillDown('Region', '${type}', '${rg}', '${sObj.k}', 'ALL')" title="คลิกเพื่อดูรายละเอียด">${rowSum.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`;
+
+                    if (idx === 0) {
+                        tb += `<tr class="${bgTr}"><td rowspan="5" class="border p-3 font-bold bg-white text-center align-middle shadow-sm sticky left-0 z-10">${rg}</td><td class="border p-2 font-medium text-center ${sObj.bg} ${sObj.c} sticky left-[120px] z-10 shadow-sm">${sObj.l}</td>${tds}${totalTd}</tr>`;
+                    } else {
+                        tb += `<tr class="${bgTr}"><td class="border p-2 font-medium text-center ${sObj.bg} ${sObj.c} sticky left-[120px] z-10 shadow-sm">${sObj.l}</td>${tds}${totalTd}</tr>`;
+                    }
+                });
+            });
+            
+            document.getElementById(tableId).innerHTML = `<thead class="sticky top-0 z-30 shadow-md">${th}</thead><tbody class="divide-y divide-gray-100">${tb}</tbody>`;
+
+            let chartMx = { 'Win':{}, 'Loss':{}, 'Follow':{}, 'Back log':{} };
+            months.forEach(m => { chartMx['Win'][m]=0; chartMx['Loss'][m]=0; chartMx['Follow'][m]=0; chartMx['Back log'][m]=0; });
+            
+            data.forEach(r => {
+                let m = String(r['เดือน Last updated']).trim();
+                if(!months.includes(m)) m = months[0];
+                let st = categorizeStatus(r['Sales Status']);
+                let opp = parseFloat(String(r[oppField]||'').replace(/,/g,'')) || 0;
+                let bl = getRecordBacklog(r);
+                if(chartMx[st] !== undefined) chartMx[st][m] += opp;
+                chartMx['Back log'][m] += bl;
+            });
+
+            if(chartInstances[chartKey]) chartInstances[chartKey].destroy();
+            chartInstances[chartKey] = new Chart(document.getElementById(chartId), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Win', data: months.map(m => chartMx['Win'][m]), borderColor: '#10b981', backgroundColor: '#10b981', fill: false, tension: 0.3, borderWidth: 2 },
+                        { label: 'Loss', data: months.map(m => chartMx['Loss'][m]), borderColor: '#ef4444', backgroundColor: '#ef4444', fill: false, tension: 0.3, borderWidth: 2 },
+                        { label: 'Follow', data: months.map(m => chartMx['Follow'][m]), borderColor: '#f59e0b', backgroundColor: '#f59e0b', fill: false, tension: 0.3, borderWidth: 2 },
+                        { label: 'Back log', data: months.map(m => chartMx['Back log'][m]), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', fill: false, tension: 0.3, borderWidth: 3, borderDash: [5, 5] }
+                    ]
+                },
+                options: { layout: { padding: { top: 20, right: 10, left: 10, bottom: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, legend: { position: 'bottom', labels: { font: { family: 'Sarabun', size: 11 }, padding: 15 } } }, scales: { y: { beginAtZero: true, grace: '10%' } } }
+            });
+        }
+
+
+        function updateProjectExtraReports(data) {
+            
+            let validData = data.filter(r => {
+                let m = String(r['เดือน Last updated'] || '').trim();
+                let y = String(r['ปี Last updated'] || '').trim();
+                return m !== '' && y !== '';
+            });
+            
+            currentFilteredProjectData = validData; 
+            
+            if(chartInstances['cBacklog']) chartInstances['cBacklog'].destroy();
+            let blMap = {}; f_pForecast.forEach(m => blMap[m] = 0);
+            validData.forEach(r => { if (categorizeStatus(r['Sales Status']) === 'Win') { f_pForecast.forEach(m => { blMap[m] += parseFloat(String(getRecordValue(r, m)||'').replace(/,/g,'')) || 0; }); } });
+            let blData = f_pForecast.map(m => blMap[m]);
+            chartInstances['cBacklog'] = new Chart(document.getElementById('chartProjectBacklog'), {
+                type: 'line',
+                data: { labels: f_pForecast, datasets: [{ label: 'ปริมาณสะสม (ตร.ม.)', data: blData, borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', fill: true, tension: 0.3, borderWidth: 2 }] },
+                options: { layout: { padding: { top: 25, bottom: 10, left: 10, right: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, legend: { display: false } }, scales: { y: { beginAtZero: true, grace: '15%' }, x: { ticks: { maxRotation: 45, minRotation: 45 } } } } 
+            });
+
+            updateBacklogRegionSection();
+
+            let monthsSet = new Set(); 
+            validData.forEach(r => { 
+                let m = String(r['เดือน Last updated']).trim();
+                if(m) monthsSet.add(m); 
+            });
+            let months = sortChronological(Array.from(monthsSet)); if(months.length === 0) months = ['ไม่ระบุ'];
+            
+            let mxMonth = { 'Win':{}, 'Loss':{}, 'Follow':{}, 'Back log':{} };
+            months.forEach(m => { mxMonth['Win'][m]=0; mxMonth['Loss'][m]=0; mxMonth['Follow'][m]=0; mxMonth['Back log'][m]=0; });
+
+            validData.forEach(r => {
+                let m = String(r['เดือน Last updated']).trim();
+                if(!months.includes(m)) m = months[0];
+                let st = categorizeStatus(r['Sales Status']);
+                let opp = parseFloat(String(r['Opp.รวม/ตร.ม.']||'').replace(/,/g,'')) || 0;
+                let bl = getRecordBacklog(r);
+                if(mxMonth[st] !== undefined) mxMonth[st][m] += opp;
+                mxMonth['Back log'][m] += bl;
+            });
+
+            let thMonth = `<th class="border p-3 bg-gray-100 font-bold text-gray-700 text-center">สถานะการขาย</th>` + months.map(m => `<th class="border p-3 bg-gray-100 font-bold text-gray-700 text-right min-w-[80px]">${m}</th>`).join('') + `<th class="border p-3 bg-blue-100 font-bold text-blue-800 text-right">รวมทั้งหมด</th>`;
+            let tbMonth = '';
+            
+            ['Win', 'Loss', 'Follow'].forEach(st => {
+                let rowSum = 0; 
+                let tds = months.map(m => { 
+                    let v = mxMonth[st][m]; rowSum += v; 
+                    return `<td class="border p-3 text-right clickable-cell" onclick="showProjectDrillDown('Month', 'all', 'all', '${st}', '${m}')" title="คลิกเพื่อดูรายละเอียด">${v.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`; 
+                }).join('');
+                tbMonth += `<tr class="hover:bg-gray-50"><td class="border p-3 font-medium text-center">${st}</td>${tds}<td class="border p-3 text-right font-bold text-blue-700 bg-blue-50/30 clickable-cell" onclick="showProjectDrillDown('Month', 'all', 'all', '${st}', 'ALL')" title="คลิกเพื่อดูรายละเอียด">${rowSum.toLocaleString(undefined,{maximumFractionDigits:2})}</td></tr>`;
+            });
+            
+            let blSum = 0; 
+            let tdsBl = months.map(m => { 
+                let v = mxMonth['Back log'][m]; blSum += v; 
+                return `<td class="border p-3 text-right clickable-cell text-purple-700" onclick="showProjectDrillDown('Month', 'all', 'all', 'Back log', '${m}')" title="คลิกเพื่อดูรายละเอียด">${v.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`; 
+            }).join('');
+            tbMonth += `<tr class="bg-purple-50 border-t-2 border-purple-200 text-purple-900 font-bold"><td class="border p-3 text-center">Back log</td>${tdsBl}<td class="border p-3 text-right clickable-cell" onclick="showProjectDrillDown('Month', 'all', 'all', 'Back log', 'ALL')" title="คลิกเพื่อดูรายละเอียด">${blSum.toLocaleString(undefined,{maximumFractionDigits:2})}</td></tr>`;
+            
+            document.getElementById('table-status-month').innerHTML = `<thead class="sticky top-0 shadow-sm"><tr>${thMonth}</tr></thead><tbody class="divide-y divide-gray-100">${tbMonth}</tbody>`;
+
+            if(chartInstances['cStatusMonth']) chartInstances['cStatusMonth'].destroy();
+            chartInstances['cStatusMonth'] = new Chart(document.getElementById('chartStatusMonth'), {
+                type: 'line',
+                data: { labels: months, datasets: [ { label: 'Win', data: months.map(m => mxMonth['Win'][m]), borderColor: '#10b981', backgroundColor: '#10b981', fill: false, tension: 0.3, borderWidth: 2 }, { label: 'Loss', data: months.map(m => mxMonth['Loss'][m]), borderColor: '#ef4444', backgroundColor: '#ef4444', fill: false, tension: 0.3, borderWidth: 2 }, { label: 'Follow', data: months.map(m => mxMonth['Follow'][m]), borderColor: '#f59e0b', backgroundColor: '#f59e0b', fill: false, tension: 0.3, borderWidth: 2 }, { label: 'Back log', data: months.map(m => mxMonth['Back log'][m]), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', fill: false, tension: 0.3, borderWidth: 3, borderDash: [5, 5] } ] },
+                options: { layout: { padding: { top: 20, right: 10, left: 10, bottom: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { datalabels: { display: false }, legend: { position: 'bottom', labels: { font: { family: 'Sarabun', size: 11 }, padding: 15 } } }, scales: { y: { beginAtZero: true, grace: '10%' } } }
+            });
+
+            updateExtraRegionSection('brick');
+            updateExtraRegionSection('other');
+            updateExtraRegionSection('precast');
+        }
+
+        function exportTableToExcel(tableId, filename) {
+            let table = document.getElementById(tableId);
+            if(!table || table.rows.length === 0 || (table.rows.length === 1 && table.innerText.includes('ไม่มีข้อมูล'))) { alert("ไม่มีข้อมูลสำหรับส่งออก"); return; }
+            let wb = XLSX.utils.table_to_book(table, {sheet: "Report"}); XLSX.writeFile(wb, filename + "_" + Date.now() + ".xlsx");
+        }
+
+        async function exportToImage(divId, filename) {
+            let el = document.getElementById(divId); const origClass = el.className; el.classList.add('bg-white');
+            try { let canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }); let link = document.createElement('a'); link.download = filename + "_" + Date.now() + '.png'; link.href = canvas.toDataURL('image/png'); link.click(); } catch(e) { alert("เกิดข้อผิดพลาดในการสร้างรูปภาพ"); } el.className = origClass;
+        }
+
+        async function exportToPDF(divId, filename) {
+            let el = document.getElementById(divId); const origClass = el.className; el.classList.add('bg-white'); 
+            try {
+                let canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }); let imgData = canvas.toDataURL('image/jpeg', 1.0); const { jsPDF } = window.jspdf;
+                let pdf = new jsPDF('l', 'mm', 'a4'); let pdfWidth = pdf.internal.pageSize.getWidth(); let pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                if (pdfHeight > pdf.internal.pageSize.getHeight()) { pdfHeight = pdf.internal.pageSize.getHeight(); pdfWidth = (canvas.width * pdfHeight) / canvas.height; }
+                let x = (pdf.internal.pageSize.getWidth() - pdfWidth) / 2; pdf.addImage(imgData, 'JPEG', x, 10, pdfWidth, pdfHeight - 20); pdf.save(filename + "_" + Date.now() + '.pdf');
+            } catch(e) { alert("เกิดข้อผิดพลาดในการสร้าง PDF"); } el.className = origClass;
+        }
+
+        function makeChart(idKey, canvasId, type, labels, mainData, counts, areas, showLegend=true) {
+            let chartLabels = labels.map((l,i) => { let c = counts && counts[i] !== undefined ? counts[i] : mainData[i]; let a = areas && areas[i] !== undefined ? areas[i] : mainData[i]; return `${l} (${c.toLocaleString()} รายการ, ${a.toLocaleString(undefined, {maximumFractionDigits:2})} ตร.ม.)`; });
+            let isBar = type === 'bar';
+            chartInstances[idKey] = new Chart(document.getElementById(canvasId), { 
+                type: type, data: { labels: chartLabels, datasets: [{ data: mainData, backgroundColor: getColorsForLabels(labels), borderWidth: 1, borderColor: '#fff', borderRadius: isBar ? 4 : 0 }] }, 
+                options: { layout: { padding: { top: 25, bottom: 20, left: 10, right: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { datalabels: isBar ? { color: '#475569', anchor: 'end', align: 'top', offset: 4, formatter: v => v > 0 ? v.toLocaleString(undefined, {maximumFractionDigits:2}) : '', font: { family: 'Sarabun', weight: 'bold' } } : datalabelsConfig, legend: { display: showLegend, position: 'bottom', labels: { font: { family: 'Sarabun', size: 11 }, padding: 15 } }, tooltip: { callbacks: { label: c => { let sum = c.dataset.data.reduce((acc, curr) => acc + curr, 0); let pct = sum > 0 ? (c.raw * 100 / sum).toFixed(1) + "%" : "0%"; return `${chartLabels[c.dataIndex]}  [สัดส่วน: ${pct}]`; } } } }, scales: isBar ? { y: { beginAtZero: true, grace: '20%' }, x: { ticks: { maxRotation: 45, minRotation: 0 } } } : { x: { display: false }, y: { display: false } } } 
+            });
+        }
+
+        function showChartDetails(title, rowsObj, labelKey) {
+            const rowData = rowsObj[labelKey] || []; document.getElementById('chartDetailsTitle').innerHTML = `<i class="fas fa-list text-blue-500 mr-2"></i> ${title}`;
+            const head = document.getElementById('chartDetailsHead'); const body = document.getElementById('chartDetailsBody');
+            const fieldsToShow = currentMode === 'wholesale' ? ['วันที่บันทึกข้อมูล', 'ชื่อร้านค้า', 'ซื้อของกับร้านผู้แทนจำหน่าย', 'Opp Counterจำนวน/ตร.ม', 'Opp Lintelจำนวน/ตร.ม', 'Sales Status'] : ['วันที่บันทึกข้อมูล', 'ชื่อโครงการ', 'ผู้รับเหมา', 'Opp Counterจำนวน/ตร.ม', 'Opp Lintelจำนวน/ตร.ม', 'Sales Status'];
+            head.innerHTML = '<tr>' + fieldsToShow.map(f => `<th class="px-4 py-3">${f}</th>`).join('') + '</tr>'; let html = ''; rowData.forEach(r => { html += '<tr class="hover:bg-blue-50 transition">'; fieldsToShow.forEach(f => { html += `<td class="px-4 py-3 whitespace-nowrap">${r[f] || '-'}</td>`; }); html += '</tr>'; }); body.innerHTML = html; document.getElementById('chartDetailsModal').classList.remove('hidden');
+        }
+
+        function makeClickablePieChart(idKey, canvasId, originalLabels, data, counts, rowsMapping, modalTitle) {
+            let displayLabels = originalLabels.map((l,i) => `${l} (${counts[i].toLocaleString()} รายการ, ${data[i].toLocaleString(undefined, {maximumFractionDigits:2})} ตร.ม.)`);
+            chartInstances[idKey] = new Chart(document.getElementById(canvasId), { type: 'pie', data: { labels: displayLabels, datasets: [{ data: data, backgroundColor: getColorsForLabels(originalLabels), borderWidth: 1, borderColor: '#ffffff' }] }, options: { layout: { padding: { top: 20, bottom: 20, left: 10, right: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { datalabels: datalabelsConfig, legend: { display: true, position: 'bottom', labels: { font: { family: 'Sarabun', size: 11 }, padding: 15 } }, tooltip: { callbacks: { label: c => { let sum = c.dataset.data.reduce((acc, curr) => acc + curr, 0); let pct = sum > 0 ? (c.raw * 100 / sum).toFixed(1) + "%" : "0%"; return `${displayLabels[c.dataIndex]}  [สัดส่วน: ${pct}]`; } } } }, onClick: (event, elements, chart) => { if (elements.length > 0) { const index = elements[0].index; const clickedLabel = originalLabels[index]; showChartDetails(modalTitle, rowsMapping, clickedLabel); } }, onHover: (event, chartElement) => { event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default'; } } });
+        }
+
+        function populateTrendDropdowns() {
+            let db = getActiveDB(); let months = new Set(); db.forEach(r => { if(r['เดือน']) months.add(String(r['เดือน']).trim()); }); let monthArr = sortChronological(Array.from(months)); let html = '<option value="">- เลือกเดือน -</option>' + monthArr.map(m => `<option value="${m}">${m}</option>`).join('');
+            ['trendM1', 'trendM2', 'trendM3'].forEach((id, i) => { let el = document.getElementById(id); let cur = el.value; el.innerHTML = html; if (!cur && monthArr.length > 0) { let defaultIdx = monthArr.length - 1 - (2 - i); if (defaultIdx >= 0 && defaultIdx < monthArr.length) el.value = monthArr[defaultIdx]; else if (monthArr.length > i) el.value = monthArr[i]; } else { el.value = cur; } });
+        }
+
+        function drawTrendChart() {
+            if(chartInstances['cTrend']) chartInstances['cTrend'].destroy();
+            let m1 = document.getElementById('trendM1').value; let m2 = document.getElementById('trendM2').value; let m3 = document.getElementById('trendM3').value;
+            let labels = [m1 || 'เดือน 1', m2 || 'เดือน 2', m3 || 'เดือน 3']; let dataArr = [0, 0, 0]; let countArr = [0, 0, 0]; let data = getFilteredDB(); let areaField = currentMode === 'wholesale' ? 'Oppรวมทั้งหมด' : 'Opp.รวม/ตร.ม.';
+            data.forEach(r => { let m = String(r['เดือน'] || '').trim(); let val = parseFloat(String(r[areaField] || '').replace(/,/g,'')) || 0; if (m && m === m1) { dataArr[0] += val; countArr[0]++; } if (m && m === m2) { dataArr[1] += val; countArr[1]++; } if (m && m === m3) { dataArr[2] += val; countArr[2]++; } });
+            let fullLabels = labels.map((l, i) => `${l} (${countArr[i]} รายการ)`);
+            chartInstances['cTrend'] = new Chart(document.getElementById('chartTrend'), { type: 'bar', data: { labels: fullLabels, datasets: [{ label: 'ปริมาณ Opp (ตร.ม.)', data: dataArr, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'], borderRadius: 6 }] }, options: { layout: { padding: { top: 30, left: 10, right: 10, bottom: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { color: '#475569', anchor: 'end', align: 'top', offset: 4, formatter: (v) => v > 0 ? v.toLocaleString(undefined, {maximumFractionDigits:2}) : '', font: { family: 'Sarabun', weight: 'bold' } } }, scales: { y: { beginAtZero: true, grace: '20%' } } } });
+        }
+
+        function updateCharts() {
+            populateFilterOptions(); populateTrendDropdowns(); drawTrendChart(); destroyCharts(); 
+            const data = getFilteredDB(); let tArea = 0; document.getElementById('summaryTotalCount').innerText = data.length.toLocaleString();
+            let counterMap = {}, lintelMap = {}; let nameField = currentMode === 'wholesale' ? 'ชื่อร้านค้า' : 'ชื่อโครงการ';
+
+            if (currentMode === 'wholesale') {
+                document.getElementById('summaryAreaTitle').innerText = 'Opp ALC รวมทั้งหมด (ตร.ม.)'; document.getElementById('titleChart1').innerText = 'Sales Status'; document.getElementById('titleChart2').innerText = 'แบรนด์มวลเบาที่ขาย'; document.getElementById('titleChart3').innerText = 'เหตุผล Win / Loss'; document.getElementById('titleChart4').innerText = 'สัดส่วนวัสดุทดแทน (ALC/แดง/บล็อก)';
+                let st = {}, br = {}, wl = {}, mat = { 'ALC':{c:0,a:0}, 'อิฐแดง':{c:0,a:0}, 'บล็อก':{c:0,a:0} };
+                
+                data.forEach(r => { 
+                    let a = parseFloat(r['Oppรวมทั้งหมด']) || 0; tArea += a; 
+                    let s = categorizeStatus(r['Sales Status']); if(!st[s]) st[s] = {c:0,a:0}; st[s].c++; st[s].a+=a; 
+                    let b = r['แบรนด์มวลเบาที่ขาย']||'ไม่ระบุ'; if(!br[b]) br[b] = {c:0,a:0}; br[b].c++; br[b].a+=a; 
+                    let w = r['เหตุผล Win / Loss']||'ไม่ระบุ'; if(!wl[w]) wl[w] = {c:0,a:0}; wl[w].c++; wl[w].a+=a; 
+                    
+                    mat['ALC'].a += a; if(a>0) mat['ALC'].c++;
+                    let aRed = parseFloat(r['จำนนวน/ตร.ม.อิฐแดง']) || 0; mat['อิฐแดง'].a += aRed; if(aRed>0) mat['อิฐแดง'].c++;
+                    let aBlk = parseFloat(r['จำนนวน/ตร.ม.คอนกรีตบล็อก']) || 0; mat['บล็อก'].a += aBlk; if(aBlk>0) mat['บล็อก'].c++;
+                    
+                    let nm = r[nameField] || 'ไม่ระบุ'; let cv = parseFloat(String(r['Opp Counterจำนวน/ตร.ม']||'').replace(/,/g,'')) || 0; let lv = parseFloat(String(r['Opp Lintelจำนวน/ตร.ม']||'').replace(/,/g,'')) || 0;
+                    if(cv > 0) { if(!counterMap[nm]) counterMap[nm] = { a:0, c:0, rows: [] }; counterMap[nm].a += cv; counterMap[nm].c++; counterMap[nm].rows.push(r); }
+                    if(lv > 0) { if(!lintelMap[nm]) lintelMap[nm] = { a:0, c:0, rows: [] }; lintelMap[nm].a += lv; lintelMap[nm].c++; lintelMap[nm].rows.push(r); }
+                });
+                
+                makeChart('c1', 'chart1', 'doughnut', Object.keys(st), Object.values(st).map(x=>x.c), Object.values(st).map(x=>x.c), Object.values(st).map(x=>x.a)); 
+                makeChart('c2', 'chart2', 'pie', Object.keys(br), Object.values(br).map(x=>x.c), Object.values(br).map(x=>x.c), Object.values(br).map(x=>x.a)); 
+                makeChart('c3', 'chart3', 'pie', Object.keys(wl), Object.values(wl).map(x=>x.c), Object.values(wl).map(x=>x.c), Object.values(wl).map(x=>x.a)); 
+                makeChart('c4', 'chart4', 'bar', Object.keys(mat), Object.values(mat).map(x=>x.a), Object.values(mat).map(x=>x.c), Object.values(mat).map(x=>x.a), false);
+                
+            } else {
+                document.getElementById('summaryAreaTitle').innerText = 'ปริมาณพื้นที่ทั้งหมด (ตร.ม.)'; document.getElementById('titleChart1').innerText = 'Sales Status'; document.getElementById('titleChart2').innerText = 'ประเภทโครงการ'; document.getElementById('titleChart3').innerText = 'Product Spec เดิม'; document.getElementById('titleChart4').innerText = 'Product ที่เสนอ';
+                let st = {}, ty = {}, sp = {}, pd = {};
+                
+                data.forEach(r => { 
+                    let a = parseFloat(r['Opp.รวม/ตร.ม.']) || 0; tArea += a; 
+                    let s = categorizeStatus(r['Sales Status']); if(!st[s]) st[s] = {c:0,a:0}; st[s].c++; st[s].a+=a; 
+                    let t = r['ประเภทโครงการ']||'ไม่ระบุ'; if(!ty[t]) ty[t] = {c:0,a:0}; ty[t].c++; ty[t].a+=a; 
+                    let p1 = r['Product Spec เดิม']||'ไม่ระบุ'; if(!sp[p1]) sp[p1] = {c:0,a:0}; sp[p1].c++; sp[p1].a+=a; 
+                    let p2 = r['Product']||'ไม่ระบุ'; if(!pd[p2]) pd[p2] = {c:0,a:0}; pd[p2].c++; pd[p2].a+=a; 
+                    
+                    let nm = r[nameField] || 'ไม่ระบุ'; let cv = parseFloat(String(r['Opp Counterจำนวน/ตร.ม']||'').replace(/,/g,'')) || 0; let lv = parseFloat(String(r['Opp Lintelจำนวน/ตร.ม']||'').replace(/,/g,'')) || 0;
+                    if(cv > 0) { if(!counterMap[nm]) counterMap[nm] = { a:0, c:0, rows: [] }; counterMap[nm].a += cv; counterMap[nm].c++; counterMap[nm].rows.push(r); }
+                    if(lv > 0) { if(!lintelMap[nm]) lintelMap[nm] = { a:0, c:0, rows: [] }; lintelMap[nm].a += lv; lintelMap[nm].c++; lintelMap[nm].rows.push(r); }
+                });
+                
+                makeChart('c1', 'chart1', 'doughnut', Object.keys(st), Object.values(st).map(x=>x.a), Object.values(st).map(x=>x.c), Object.values(st).map(x=>x.a)); 
+                makeChart('c2', 'chart2', 'pie', Object.keys(ty), Object.values(ty).map(x=>x.a), Object.values(ty).map(x=>x.c), Object.values(ty).map(x=>x.a)); 
+                makeChart('c3', 'chart3', 'pie', Object.keys(sp), Object.values(sp).map(x=>x.a), Object.values(sp).map(x=>x.c), Object.values(sp).map(x=>x.a)); 
+                makeChart('c4', 'chart4', 'pie', Object.keys(pd), Object.values(pd).map(x=>x.a), Object.values(pd).map(x=>x.c), Object.values(pd).map(x=>x.a));
+                
+                let foreData = f_pForecast.map(m => data.reduce((sum, r) => sum + (parseFloat(String(getRecordValue(r, m)||'').replace(/,/g,''))||0), 0));
+                chartInstances['cFore'] = new Chart(document.getElementById('forecastChart'), { type: 'bar', data: { labels: f_pForecast, datasets: [{ label: 'ตร.ม.', data: foreData, backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { layout: { padding: { top: 25, bottom: 10, left: 10, right: 10 } }, responsive: true, maintainAspectRatio: false, plugins: { datalabels: { color: '#475569', anchor: 'end', align: 'top', offset: 4, formatter: v => v > 0 ? v.toLocaleString(undefined, {maximumFractionDigits:2}) : '', font: { family: 'Sarabun', weight: 'bold', size: 10 } }, legend:{display:false} }, scales: { y: { beginAtZero: true, grace: '15%' }, x: { ticks: { maxRotation: 45, minRotation: 45 } } } } });
+                
+                updateProjectExtraReports(data);
+            }
+            
+            document.getElementById('summaryTotalArea').innerText = tArea.toLocaleString(undefined, {maximumFractionDigits:2}); drawDynamicChart(data); renderTable(); drawTrendChart();
+            let cLabels = Object.keys(counterMap).sort((a,b)=>counterMap[b].a - counterMap[a].a).slice(0,10); let cData = cLabels.map(k => counterMap[k].a); let cCounts = cLabels.map(k => counterMap[k].c); let cRows = {}; cLabels.forEach(k => cRows[k] = counterMap[k].rows); makeClickablePieChart('cCounter', 'chartCounter', cLabels, cData, cCounts, cRows, 'Opp Counter');
+            let lLabels = Object.keys(lintelMap).sort((a,b)=>lintelMap[b].a - lintelMap[a].a).slice(0,10); let lData = lLabels.map(k => lintelMap[k].a); let lCounts = lLabels.map(k => lintelMap[k].c); let lRows = {}; lLabels.forEach(k => lRows[k] = lintelMap[k].rows); makeClickablePieChart('cLintel', 'chartLintel', lLabels, lData, lCounts, lRows, 'Opp Lintel');
+        }
+
+        function drawDynamicChart(dt) {
+            if(chartInstances['cCustom']) chartInstances['cCustom'].destroy(); 
+            let data = dt || getFilteredDB(); let fld = document.getElementById('dynamicChartFilter').value; let res = {};
+            data.forEach(r => { let k = r[fld] || 'ไม่ระบุ'; let a = currentMode === 'wholesale' ? (parseFloat(r['Oppรวมทั้งหมด'])||0) : (parseFloat(r['Opp.รวม/ตร.ม.'])||0); if(!res[k]) res[k] = {c:0, a:0}; res[k].c++; res[k].a += a; });
+            let lbl = Object.keys(res).sort((a,b)=>res[b].a - res[a].a); let cVals = lbl.map(k=>res[k].c); let aVals = lbl.map(k=>res[k].a); let mainVals = currentMode === 'wholesale' ? cVals : aVals;
+            makeChart('cCustom', 'chartCustom', 'pie', lbl, mainVals, cVals, aVals);
+        }
+
+        function switchTab(tabId) { document.getElementById('formTab').classList.add('hidden'); document.getElementById('dashboardTab').classList.add('hidden'); document.getElementById('btn-formTab').classList.replace('tab-active','text-gray-500'); document.getElementById('btn-dashboardTab').classList.replace('tab-active','text-gray-500'); document.getElementById(tabId).classList.remove('hidden'); document.getElementById('btn-' + tabId).classList.replace('text-gray-500','tab-active'); if(tabId === 'dashboardTab') { cancelEdit(); setTimeout(updateCharts, 50); } }
+        function exportToExcel() { let data = getActiveDB(); if (data.length === 0) { alert("ไม่มีข้อมูล"); return; } let ws = XLSX.utils.json_to_sheet(data.map(r => { let n={}; getActiveFields().forEach(f => n[f]=getRecordValue(r, f)||''); return n; })); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, `SCG_${currentMode}_Data.xlsx`); }
+        function importFromExcel(e) { let file = e.target.files[0]; if(!file) return; let reader = new FileReader(); reader.onload = async (ev) => { try { let raw = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(ev.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(ev.target.result), {type: 'array'}).SheetNames[0]], {defval: ""}); if(raw.length > 0) { let mapped = raw.map(r => { let n = {}; getActiveFields().forEach(f => { let oldF = (f.includes('2026') || f.includes('2027')) ? f.replace('202', '') : f; let foundKey = Object.keys(r).find(x => x.trim().toLowerCase() === f.trim().toLowerCase() || x.trim().toLowerCase() === oldF.trim().toLowerCase()); n[f] = foundKey ? r[foundKey] : ''; }); return n; }); if(currentMode === 'wholesale') dbWholesale = dbWholesale.concat(mapped); else dbProject = dbProject.concat(mapped); saveLocalAndCloud(); updateDataLists(); renderTable(); updateCharts(); alert(`นำเข้าสำเร็จ ${mapped.length} รายการ`); } } catch(err) { alert("ไฟล์ผิดพลาด"); } e.target.value = ''; }; reader.readAsArrayBuffer(file); }
+
+    </script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    
